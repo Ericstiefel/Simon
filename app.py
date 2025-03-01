@@ -12,6 +12,10 @@ ACTIVE_TOKENS = set()  # Stores session tokens
 def authenticate():
     """Authenticate user and return a session token."""
     data = request.json
+
+    print("Received Data:", data)
+
+    
     if not data or data.get("securityKey") != SECURITY_KEY:
         return jsonify({"error": "Unauthorized access"}), 403
 
