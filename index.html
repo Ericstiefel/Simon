@@ -4,36 +4,79 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Financial Metric Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+        #calculator, #error-message {
+            display: none;
+        }
+    </style>
 </head>
 <body>
-    <h2>Financial Metric Calculator</h2>
-    
-    <label for="pv">Present Value ($):</label>
-    <input type="number" id="pv" placeholder="Enter PV">
-    <br>
 
-    <label for="rate">Annual Interest Rate (%):</label>
-    <input type="number" id="rate" placeholder="Enter Rate">
-    <br>
+    <!-- Security Key Entry -->
+    <div id="security-screen">
+        <h2>Enter Security Key</h2>
+        <input type="password" id="security-key" placeholder="Enter Key">
+        <button onclick="authenticateUser()">Submit</button>
+        <p id="error-message" style="color: red;"></p>
+    </div>
 
-    <label for="years">Number of Years:</label>
-    <input type="number" id="years" placeholder="Enter Years">
-    <br>
+    <!-- Financial Calculator (Hidden Initially) -->
+    <div id="calculator">
+        <h2>Financial Metric Calculator</h2>
+        
+        <label for="pv">Present Value ($):</label>
+        <input type="number" id="pv" placeholder="Enter PV">
+        <br>
 
-    <button onclick="calculateFV()">Compute Future Value</button>
-    <h3 id="result"></h3>
+        <label for="rate">Annual Interest Rate (%):</label>
+        <input type="number" id="rate" placeholder="Enter Rate">
+        <br>
+
+        <label for="years">Number of Years:</label>
+        <input type="number" id="years" placeholder="Enter Years">
+        <br>
+
+        <button onclick="calculateFV()">Compute Future Value</button>
+        <h3 id="result"></h3>
+    </div>
 
     <script>
+        function authenticateUser() {
+            let enteredKey = document.getElementById("security-key").value;
+
+            fetch('http://127.0.0.1:5000/authenticate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ securityKey: enteredKey }) 
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.token) {
+                    localStorage.setItem("sessionToken", data.token); // Store token
+                    document.getElementById("security-screen").style.display = "none";
+                    document.getElementById("calculator").style.display = "block";
+                } else {
+                    document.getElementById("error-message").innerText = "Incorrect key. Try again.";
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
         function calculateFV() {
             let pv = document.getElementById("pv").value;
             let rate = document.getElementById("rate").value;
             let years = document.getElementById("years").value;
+            let token = localStorage.getItem("sessionToken"); // Retrieve token
 
-            // Send data to Python backend
             fetch('http://127.0.0.1:5000/compute_fv', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ pv, rate, years })
+                body: JSON.stringify({ pv, rate, years, token }) 
             })
             .then(response => response.json())
             .then(data => {
@@ -46,5 +89,6 @@
             .catch(error => console.error('Error:', error));
         }
     </script>
+
 </body>
 </html>
