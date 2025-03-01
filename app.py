@@ -1,27 +1,45 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS  # Enable cross-origin requests
+from flask_cors import CORS
+import secrets  # Used to generate session tokens
 
 app = Flask(__name__)
-CORS(app)  # Allow frontend to talk to backend
+CORS(app)
 
-# API endpoint to receive data and compute future value
+SECURITY_KEY = "EricStiefel8"
+ACTIVE_TOKENS = set()  # Stores session tokens
+
+@app.route('/authenticate', methods=['POST'])
+def authenticate():
+    """Authenticate user and return a session token."""
+    data = request.json
+    if not data or data.get("securityKey") != SECURITY_KEY:
+        return jsonify({"error": "Unauthorized access"}), 403
+
+    # Generate a secure session token
+    token = secrets.token_hex(16)
+    ACTIVE_TOKENS.add(token)
+    
+    return jsonify({"token": token})
+
 @app.route('/compute_fv', methods=['POST'])
 def compute_fv():
+    """Compute FV only if the user has a valid session token."""
+    data = request.json
+    token = data.get("token")
+
+    if token not in ACTIVE_TOKENS:
+        return jsonify({"error": "Invalid session"}), 403  # Access denied
+
     try:
-        # Parse JSON data sent from frontend
-        data = request.json
         pv = float(data.get('pv'))
         rate = float(data.get('rate')) / 100
         years = int(data.get('years'))
-        
-        # Compute Future Value (FV)
+
         fv = pv * (1 + rate) ** years
-        
-        # Send response back to frontend
         return jsonify({'fv': fv})
 
-    except (ValueError, TypeError, KeyError):
-        return jsonify({'error': 'Invalid input'}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
 if __name__ == '__main__':
-    app.run(debug=True)  # Run backend at http://127.0.0.1:5000/
+    app.run(debug=True)
