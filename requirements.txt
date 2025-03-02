@@ -1,0 +1,3 @@
+flask
+flast_cors
+gunicorn
