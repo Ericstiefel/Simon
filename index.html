@@ -49,7 +49,7 @@
         function authenticateUser() {
             let enteredKey = document.getElementById("security-key").value;
 
-            fetch('http://127.0.0.1:5000/authenticate', {
+            fetch('https://simon-36r5.onrender.com/authenticate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ securityKey: enteredKey }) 
@@ -73,7 +73,7 @@
             let years = document.getElementById("years").value;
             let token = localStorage.getItem("sessionToken"); // Retrieve token
 
-            fetch('http://127.0.0.1:5000/compute_fv', {
+            fetch('https://simon-36r5.onrender.com', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ pv, rate, years, token }) 
