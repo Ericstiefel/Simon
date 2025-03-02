@@ -4,7 +4,8 @@ from flask_cors import CORS
 import secrets  # Used to generate session tokens
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
+
 
 SECURITY_KEY = "EricStiefel8"
 ACTIVE_TOKENS = set()  # Stores session tokens

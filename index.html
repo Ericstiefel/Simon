@@ -56,15 +56,17 @@
             })
             .then(response => response.json())
             .then(data => {
-                if (data.token) {
+                if (status == 200 && data.token) {
                     localStorage.setItem("sessionToken", data.token); // Store token
                     document.getElementById("security-screen").style.display = "none";
                     document.getElementById("calculator").style.display = "block";
+                    errorMessage.innerText = "";
                 } else {
-                    document.getElementById("error-message").innerText = "Incorrect key. Try again.";
+                    errorMessage.innerText = "Incorrect key. Try again.";
                 }
             })
             .catch(error => console.error('Error:', error));
+            errorMessage.innerText = "An error occurred. Please try again.";
         }
 
         function calculateFV() {
