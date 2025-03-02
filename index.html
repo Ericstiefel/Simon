@@ -48,48 +48,30 @@
     <script>
         function authenticateUser() {
             let enteredKey = document.getElementById("security-key").value;
-
+            let errorMessage = document.getElementById("error-message"); 
+    
             fetch('https://simon-36r5.onrender.com/authenticate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ securityKey: enteredKey }) 
             })
-            .then(response => response.json())
-            .then(data => {
-                if (status == 200 && data.token) {
-                    localStorage.setItem("sessionToken", data.token); // Store token
+            .then(response => response.json().then(data => ({ status: response.status, body: data })))
+            .then(({ status, body }) => {
+                if (status === 200 && body.token) {
+                    localStorage.setItem("sessionToken", body.token); // Store token
                     document.getElementById("security-screen").style.display = "none";
                     document.getElementById("calculator").style.display = "block";
-                    errorMessage.innerText = "";
+                    errorMessage.innerText = ""; 
                 } else {
                     errorMessage.innerText = "Incorrect key. Try again.";
                 }
             })
-            .catch(error => console.error('Error:', error));
-            errorMessage.innerText = "An error occurred. Please try again.";
-        }
-
-        function calculateFV() {
-            let pv = document.getElementById("pv").value;
-            let rate = document.getElementById("rate").value;
-            let years = document.getElementById("years").value;
-            let token = localStorage.getItem("sessionToken"); // Retrieve token
-
-            fetch('https://simon-36r5.onrender.com', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ pv, rate, years, token }) 
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.fv) {
-                    document.getElementById("result").innerText = `Future Value: $${data.fv.toFixed(2)}`;
-                } else {
-                    document.getElementById("result").innerText = "Error: " + data.error;
-                }
-            })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Error:', error);
+                errorMessage.innerText = "An error occurred. Please try again.";
+            });
         }
     </script>
+    
 </body>
 </html>
