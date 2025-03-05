@@ -23,7 +23,7 @@
 </head>
 <body>
 
-    <!-- Security Key Entry -->
+    <!-- Security Screen -->
     <div id="security-screen">
         <h2>Enter Security Key</h2>
         <input type="password" id="security-key" placeholder="Enter Key">
@@ -93,6 +93,7 @@
                 let emailMe = document.getElementById("email-me").checked;
                 let email = document.getElementById("email").value;
                 let fileInput = document.getElementById("fileInput");
+                let errorMessage = document.getElementById("error-message"); // Assuming you have an element to display error messages
 
                 if (fileInput.files.length === 0) {
                     alert("Please select a CSV file");
@@ -102,6 +103,15 @@
                 let file = fileInput.files[0];
                 if (file.type !== "text/csv") {
                     alert("Invalid file type. Please upload a CSV file.");
+                    return;
+                }
+
+                // Regular expression to validate email format
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                if (emailMe && !emailRegex.test(email)) {
+                    errorMessage.innerText = "Not a valid email";
+                    errorMessage.style.visibility = "visible";
                     return;
                 }
 
@@ -120,6 +130,12 @@
             }
         </script>
 
+
+    </div>
+
+    // Update Estimated time 
+    <div id="Loading-Screen">
+        <h2>Loading</h2>
 
     </div>
 
