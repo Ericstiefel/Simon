@@ -82,6 +82,12 @@
                 });
             }
 
+            function toggleEmailInput() {
+                let emailField = document.getElementById("email");
+                let emailCheckbox = document.getElementById("email-me");
+                emailField.style.display = emailCheckbox.checked ? "inline-block" : "none";
+            }
+
 
             function findOptions() {
                 let emailMe = document.getElementById("email-me").checked;
