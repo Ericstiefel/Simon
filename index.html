@@ -3,21 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Financial Metric Calculator</title>
+    <title>Options Locator</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
             margin: 50px;
         }
-        #calculator {
-            display: none;
-        }
+
         #error-message {
             color: red;
             margin-top: 5px;
             font-weight: bold;
             visibility: hidden; 
+        }
+
+        #inputs {
+            display: none;
         }
     </style>
 </head>
@@ -31,24 +33,19 @@
         <p id="error-message">Incorrect key. Try again.</p>
     </div>
 
-    <!-- Financial Calculator (Hidden Initially) -->
-    <div id="calculator">
-        <h2>Financial Metric Calculator</h2>
-        
-        <label for="pv">Present Value ($):</label>
-        <input type="number" id="pv" placeholder="Enter PV">
+    <!-- Data Page -->
+    <div id="inputs">
+        <h2>Options Locator</h2>
+
+        <label>
+            <input type="checkbox" id="email-me" onchange="toggleEmailInput()"> Email me
+        </label>
         <br>
 
-        <label for="rate">Annual Interest Rate (%):</label>
-        <input type="number" id="rate" placeholder="Enter Rate">
+        <input type="email" id="email" placeholder="abc@examplemail.com" style="display: none;">
         <br>
 
-        <label for="years">Number of Years:</label>
-        <input type="number" id="years" placeholder="Enter Years">
-        <br>
-
-        <button onclick="calculateFV()">Compute Future Value</button>
-        <h3 id="result"></h3>
+        <button onclick="findOptions()">Submit</button>
     </div>
 
     <script>
@@ -62,10 +59,10 @@
                 body: JSON.stringify({ securityKey: enteredKey }) 
             })
             .then(response => response.json().then(data => ({ status: response.status, data })))
-            .then(({ status, data }) => {
+            .then(({ status }) => {
                 if (status === 200) {
                     document.getElementById("security-screen").style.display = "none";
-                    document.getElementById("calculator").style.display = "block";
+                    document.getElementById("inputs").style.display = "block";  // Show input section
                     errorMessage.style.visibility = "hidden"; 
                 } else {
                     errorMessage.style.visibility = "visible"; 
@@ -76,6 +73,30 @@
                 errorMessage.innerText = "An error occurred. Please try again.";
                 errorMessage.style.visibility = "visible"; 
             });
+        }
+
+        function toggleEmailInput() {
+            let emailField = document.getElementById("email");
+            let emailCheckbox = document.getElementById("email-me");
+            emailField.style.display = emailCheckbox.checked ? "inline-block" : "none";
+        }
+
+        function findOptions() {
+            let emailMe = document.getElementById("email-me").checked;
+            let email = document.getElementById("email").value;
+
+            fetch('https://simon-36r5.onrender.com/findOptions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+
+                body: JSON.stringify({
+                    emailMe: emailMe,
+                    email: email
+                }) 
+            })
+            .then(response => response.json())
+            .then(data => console.log("Server Response:", data))
+            .catch(error => console.error("Error:", error));
         }
     </script>
     

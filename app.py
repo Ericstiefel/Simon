@@ -5,31 +5,27 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-
 SECURITY_KEY = "EricStiefel8"
 
 @app.route('/authenticate', methods=['POST'])
 def authenticate():
-
     data = request.json
     
     if not data or data.get("securityKey") != SECURITY_KEY:
         return jsonify({"error": "Unauthorized access"}), 403
 
-    return jsonify(True)
+    return jsonify({"message": "Authentication successful"}), 200
 
-@app.route('/compute_fv', methods=['POST'])
-def compute_fv():
-    """Compute FV only if the user has a valid session token."""
+@app.route('/findOptions', methods=['POST'])
+def find_options():
+    """Receives emailMe and email values and returns them for confirmation."""
     data = request.json
 
     try:
-        pv = float(data.get('pv'))
-        rate = float(data.get('rate')) / 100
-        years = int(data.get('years'))
+        email_me = data.get('emailMe', False)
+        email = data.get('email', '')
 
-        fv = pv * (1 + rate) ** years
-        return jsonify({'fv': fv})
+        return jsonify({'emailMe': email_me, 'email': email}), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 400
