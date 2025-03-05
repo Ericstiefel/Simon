@@ -10,22 +10,33 @@ SECURITY_KEY = "EricStiefel8"
 @app.route('/authenticate', methods=['POST'])
 def authenticate():
     data = request.json
-    
     if not data or data.get("securityKey") != SECURITY_KEY:
         return jsonify({"error": "Unauthorized access"}), 403
-
     return jsonify({"message": "Authentication successful"}), 200
 
 @app.route('/findOptions', methods=['POST'])
 def find_options():
-    """Receives emailMe and email values and returns them for confirmation."""
-    data = request.json
-
+    """Receives CSV file, emailMe, and email values and returns them for confirmation."""
     try:
-        email_me = data.get('emailMe', False)
-        email = data.get('email', '')
+        if 'CSVfile' not in request.files:
+            return jsonify({'error': 'No file uploaded'}), 400
+        
+        csv_file = request.files['CSVfile']
+        if csv_file.filename == '':
+            return jsonify({'error': 'No selected file'}), 400
+        
+        email_me = request.form.get('emailMe', 'false') == 'true'
+        email = request.form.get('email', '')
 
-        return jsonify({'emailMe': email_me, 'email': email}), 200
+        # Save file (optional)
+        csv_file.save(os.path.join("uploads", csv_file.filename))
+
+        return jsonify({
+            'message': 'File received successfully',
+            'filename': csv_file.filename,
+            'emailMe': email_me,
+            'email': email
+        }), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 400

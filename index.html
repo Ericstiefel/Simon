@@ -10,14 +10,12 @@
             text-align: center;
             margin: 50px;
         }
-
         #error-message {
             color: red;
             margin-top: 5px;
             font-weight: bold;
             visibility: hidden; 
         }
-
         #inputs {
             display: none;
         }
@@ -37,6 +35,79 @@
     <div id="inputs">
         <h2>Options Locator</h2>
 
+        <label for="fileInput" class="custom-button"> Choose CSV File </label>
+        <input type="file" id="fileInput" accept=".csv"/>
+
+        <script>
+            document.getElementById('fileInput').addEventListener('change', function(event) {
+                if (event.target.files.length > 0) {
+                    alert('Selected file: ' + event.target.files[0].name);
+                }
+            });
+
+            function authenticateUser() {
+                let enteredKey = document.getElementById("security-key").value;
+                let errorMessage = document.getElementById("error-message");
+
+                fetch('https://simon-36r5.onrender.com/authenticate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ securityKey: enteredKey }) 
+                })
+                .then(response => response.json().then(data => ({ status: response.status, data })))
+                .then(({ status }) => {
+                    if (status === 200) {
+                        document.getElementById("security-screen").style.display = "none";
+                        document.getElementById("inputs").style.display = "block";  
+                        errorMessage.style.visibility = "hidden"; 
+                    } else {
+                        errorMessage.style.visibility = "visible"; 
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    errorMessage.innerText = "An error occurred. Please try again.";
+                    errorMessage.style.visibility = "visible"; 
+                });
+            }
+
+            function toggleEmailInput() {
+                let emailField = document.getElementById("email");
+                let emailCheckbox = document.getElementById("email-me");
+                emailField.style.display = emailCheckbox.checked ? "inline-block" : "none";
+            }
+
+            function findOptions() {
+                let emailMe = document.getElementById("email-me").checked;
+                let email = document.getElementById("email").value;
+                let fileInput = document.getElementById("fileInput");
+
+                if (fileInput.files.length === 0) {
+                    alert("Please select a CSV file");
+                    return;
+                }
+
+                let file = fileInput.files[0];
+                if (file.type !== "text/csv") {
+                    alert("Invalid file type. Please upload a CSV file.");
+                    return;
+                }
+
+                let formData = new FormData();
+                formData.append("CSVfile", file);  
+                formData.append("emailMe", emailMe);
+                formData.append("email", email);
+
+                fetch('https://simon-36r5.onrender.com/findOptions', {
+                    method: 'POST',
+                    body: formData  
+                })
+                .then(response => response.json())
+                .then(data => console.log("Server Response:", data))
+                .catch(error => console.error("Error:", error));
+            }
+        </script>
+
         <label>
             <input type="checkbox" id="email-me" onchange="toggleEmailInput()"> Email me
         </label>
@@ -48,57 +119,5 @@
         <button onclick="findOptions()">Submit</button>
     </div>
 
-    <script>
-        function authenticateUser() {
-            let enteredKey = document.getElementById("security-key").value;
-            let errorMessage = document.getElementById("error-message");
-
-            fetch('https://simon-36r5.onrender.com/authenticate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ securityKey: enteredKey }) 
-            })
-            .then(response => response.json().then(data => ({ status: response.status, data })))
-            .then(({ status }) => {
-                if (status === 200) {
-                    document.getElementById("security-screen").style.display = "none";
-                    document.getElementById("inputs").style.display = "block";  // Show input section
-                    errorMessage.style.visibility = "hidden"; 
-                } else {
-                    errorMessage.style.visibility = "visible"; 
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                errorMessage.innerText = "An error occurred. Please try again.";
-                errorMessage.style.visibility = "visible"; 
-            });
-        }
-
-        function toggleEmailInput() {
-            let emailField = document.getElementById("email");
-            let emailCheckbox = document.getElementById("email-me");
-            emailField.style.display = emailCheckbox.checked ? "inline-block" : "none";
-        }
-
-        function findOptions() {
-            let emailMe = document.getElementById("email-me").checked;
-            let email = document.getElementById("email").value;
-
-            fetch('https://simon-36r5.onrender.com/findOptions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-
-                body: JSON.stringify({
-                    emailMe: emailMe,
-                    email: email
-                }) 
-            })
-            .then(response => response.json())
-            .then(data => console.log("Server Response:", data))
-            .catch(error => console.error("Error:", error));
-        }
-    </script>
-    
 </body>
 </html>
