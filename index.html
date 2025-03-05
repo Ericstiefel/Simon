@@ -54,10 +54,10 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ securityKey: enteredKey }) 
             })
-            .then(response => response.json())
-            .then(data => {
-                if (status == 200 && data.token) {
-                    localStorage.setItem("sessionToken", data.token); 
+            .then(response => response.json().then(data => ({ status: response.status, data })))
+            .then(({ status, data }) => {
+                if (status === 200 && data.token) {
+                    localStorage.setItem("sessionToken", data.token);
                     document.getElementById("security-screen").style.display = "none";
                     document.getElementById("calculator").style.display = "block";
                     document.getElementById("error-message").innerText = ""; 
