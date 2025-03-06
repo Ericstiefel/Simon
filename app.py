@@ -1,7 +1,8 @@
 import os
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, Response
 from flask_cors import CORS
 import time
+import json
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -41,10 +42,10 @@ def gather_data():
 def progress():
     def generate():
         for i in range(1, 101):
-            time.sleep(1)  # Simulate a delay (e.g., processing)
-            estimated_time_remaining = (100 - i) * 1  # Example calculation
+            time.sleep(10)  
+            estimated_time_remaining = (100 - i) 
             percentage_completion = i
-            yield f"data: {jsonify({'progress': percentage_completion, 'time_remaining': estimated_time_remaining})}\n\n"
+            yield f"data: {json.dumps({'progress': percentage_completion, 'time_remaining': estimated_time_remaining})}\n\n"
 
     return Response(generate(), mimetype='text/event-stream')
 
