@@ -19,6 +19,12 @@
         #inputs {
             display: none;
         }
+        #Loading-Screen {
+            display: none
+        }
+        #Results {
+            display: none
+        }
     </style>
 </head>
 <body>
@@ -31,27 +37,81 @@
         <p id="error-message">Incorrect key. Try again.</p>
     </div>
 
-    <!-- Data Page -->
+    <!-- Data Screen -->
     <div id="inputs">
         <h2>Options Locator</h2>
 
-        <label for="fileInput" class="custom-button"> Choose CSV File </label>
-        <input type="file" id="fileInput" accept=".csv"/>
+        <br>
+        <label>
+            <input type="checkbox" id="custom-list" onchange="toggleListInput()"> Custom List(Default is all available securities)
+        </label>
+
+        <label for="fileInput" class="custom-button" style="display: none;"> Choose CSV File </label>
+        <input type="file" id="fileInput" style="display: none;" accept=".csv"/>
 
         <br>
         <label>
             <input type="checkbox" id="email-me" onchange="toggleEmailInput()"> Email me
         </label>
-        <br>
 
         <input type="email" id="email" placeholder="abc@examplemail.com" style="display: none;">
         <br>
 
         <button onclick="findOptions()">Submit</button>
+    </div>
+
+    <!-- Loading Screen -->
+    <div id="Loading-Screen">
+        <h1>Loading...</h1>
+        <p>Progress: <span id="progress">0</span>%</p>
+        <p>Estimated Time Remaining: <span id="time-remaining">0</span> seconds</p>
 
         <script>
+            // Constant connection with backend
+            const eventSource = new EventSource('/progress');
+
+            eventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                document.getElementById('progress').textContent = data.progress;
+                document.getElementById('time-remaining').textContent = data.time_remaining;
+
+                if (data.progress >= 100) {
+                    eventSource.close();
+                    document.getElementById("Loading-Screen").style.display = "none";
+                    document.getElementById("Results").style.display = "block";
+                }
+            };
+
+            eventSource.onerror = function() {
+                console.error('EventSource failed.');
+                eventSource.close();
+            };
+        </script>
+        <br>
+        <p id="body">Complete!</p>
+    </div>
+
+    <!-- Results Screen-->
+    <div id="Results">
+        <h1>Algo Results</h1>
+    </div>
+    
+
+
+        <script>
+
+            window.onload = function() {
+                document.getElementById('security-key').focus();
+            };
+
+            document.getElementById('security-key').addEventListener('keydown', function(event){
+                if(event.key == 'Enter'){
+                    authenticateUser();
+                }
+            });
+
             document.getElementById('fileInput').addEventListener('change', function(event) {
-                if (event.target.files.length > 0) {
+                if (event.target.files.length !== 0) {
                     alert('Selected file: ' + event.target.files[0].name);
                 }
             });
@@ -71,6 +131,18 @@
                         document.getElementById("security-screen").style.display = "none";
                         document.getElementById("inputs").style.display = "block";  
                         errorMessage.style.visibility = "hidden"; 
+
+                        document.getElementById("email-me").focus();
+
+                        document.addEventListener('keydown', function(event) {
+                            if (event.key === 'Enter') {
+                                let activeElement = document.activeElement;
+                                if (activeElement.tagName === 'INPUT' && activeElement.closest('#inputs')) {
+                                    findOptions();
+                                }
+                            }
+                        });
+
                     } else {
                         errorMessage.style.visibility = "visible"; 
                     }
@@ -82,9 +154,19 @@
                 });
             }
 
+            
+            function toggleListInput() {
+                let custom = document.getElementById("custom-list");
+                let customList = document.getElementById("fileInput");
+
+                customList.style.display = custom.checked ? "inline-block" : "none";
+                
+            }
+
             function toggleEmailInput() {
-                let emailField = document.getElementById("email");
                 let emailCheckbox = document.getElementById("email-me");
+                let emailField = document.getElementById("email");
+
                 emailField.style.display = emailCheckbox.checked ? "inline-block" : "none";
             }
 
@@ -92,33 +174,44 @@
             function findOptions() {
                 let emailMe = document.getElementById("email-me").checked;
                 let email = document.getElementById("email").value;
+                let customListChecked = document.getElementById("custom-list").checked;
                 let fileInput = document.getElementById("fileInput");
-                let errorMessage = document.getElementById("error-message"); // Assuming you have an element to display error messages
+                let errorMessage = document.getElementById("error-message"); 
 
-                if (fileInput.files.length === 0) {
-                    alert("Please select a CSV file");
-                    return;
+                if (customListChecked) {
+                    if (fileInput.files.length === 0) {
+                        alert("Please select a CSV file.");
+                        return;
+                    }
+
+                    let file = fileInput.files[0];
+                    if (file.type !== "text/csv") {
+                        alert("Invalid file type. Please upload a CSV file.");
+                        return;
+                    }
                 }
 
-                let file = fileInput.files[0];
-                if (file.type !== "text/csv") {
-                    alert("Invalid file type. Please upload a CSV file.");
-                    return;
+                if (emailMe) {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(email)) {
+                        errorMessage.innerText = "Not a valid email";
+                        errorMessage.style.visibility = "visible";
+                        return;
+                    }
                 }
 
-                // Regular expression to validate email format
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-                if (emailMe && !emailRegex.test(email)) {
-                    errorMessage.innerText = "Not a valid email";
-                    errorMessage.style.visibility = "visible";
-                    return;
-                }
+                document.getElementById("inputs").style.display = "none";
+                document.getElementById("Loading-Screen").style.display = "block";
 
                 let formData = new FormData();
-                formData.append("CSVfile", file);  
+                formData.append("custom_list", customListChecked);
+                if (customListChecked && fileInput.files.length > 0) {
+                    formData.append("CSVfile", fileInput.files[0]);
+                }
                 formData.append("emailMe", emailMe);
-                formData.append("email", email);
+                if (emailMe) {
+                    formData.append("email", email);
+                }
 
                 fetch('https://simon-36r5.onrender.com/findOptions', {
                     method: 'POST',
@@ -128,16 +221,9 @@
                 .then(data => console.log("Server Response:", data))
                 .catch(error => console.error("Error:", error));
             }
+
         </script>
 
-
-    </div>
-
-    // Update Estimated time 
-    <div id="Loading-Screen">
-        <h2>Loading</h2>
-
-    </div>
 
 </body>
 </html>
