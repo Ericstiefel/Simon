@@ -2,4 +2,3 @@ polygon-api-client
 Flask
 Flask-Cors
 python-dotenv
-pywin32
