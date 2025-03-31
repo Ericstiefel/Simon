@@ -125,7 +125,6 @@ def progress(request_id):
             yield f"data: {json.dumps({'progress': progress_value})}\n\n"
             if progress_value == 100:
                 break
-            time.sleep(1)
             yield ": keep-alive\n\n"
 
     return Response(generate(), mimetype='text/event-stream')
