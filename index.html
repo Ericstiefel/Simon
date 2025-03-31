@@ -207,6 +207,7 @@
             eventSource.onerror = function() {
                 console.error('EventSource failed.');
                 eventSource.close();
+                setTimeout(() => getProgress(requestId), 5000);
             };
         }
 

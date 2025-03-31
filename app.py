@@ -34,7 +34,7 @@ def run(tickers: list[str], request_id):
                 have_winners.append(stock)
 
         except Exception as e:
-            print(f"An error occurred: {e}")
+            print(f"An error occurred while processing {tick}: {e}")
             not_processed.append(tick)
 
         progress = int((i + 1) / total_tickers * 100)
@@ -117,7 +117,6 @@ def gather_data():
     except Exception as e:
         return jsonify({'error': str(e)}), 400
     
-
 @app.route('/progress/<request_id>', methods=['GET'])
 def progress(request_id):
     def generate():
@@ -126,7 +125,8 @@ def progress(request_id):
             yield f"data: {json.dumps({'progress': progress_value})}\n\n"
             if progress_value == 100:
                 break
-            time.sleep(5)
+            time.sleep(1)
+            yield ": keep-alive\n\n"
 
     return Response(generate(), mimetype='text/event-stream')
 

@@ -30,10 +30,3 @@ def getData(ticker: str):
         print(f"An error occurred: {e}")
     
     return (put_ticks, strikes, bids, asks, exp_date)
-
-
-print(getData('AMZN'))
-
-print(getData('TSLA'))
-
-print(getData('GM'))
