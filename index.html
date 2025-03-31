@@ -37,6 +37,7 @@
     </div>
 
     <script>
+
         window.onload = function() {
             document.getElementById('security-key').focus();
         };
@@ -48,41 +49,45 @@
         });
 
         function authenticateUser() {
-            let enteredKey = document.getElementById("security-key").value;
-            let errorMessage = document.getElementById("error-message");
+                let enteredKey = document.getElementById("security-key").value;
+                let errorMessage = document.getElementById("error-message");
 
-            fetch('/authenticate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ securityKey: enteredKey })
-            })
-            .then(response => response.json().then(data => ({ status: response.status, data })))
-            .then(({ status }) => {
-                if (status === 200) {
-                    document.getElementById("security-screen").style.display = "none";
-                    document.getElementById("inputs").style.display = "block";
-                    errorMessage.style.visibility = "hidden";
-                    document.getElementById("email-me").focus();
-                    document.addEventListener('keydown', function(event) {
-                        if (event.key === 'Enter') {
-                            let activeElement = document.activeElement;
-                            if (activeElement.tagName === 'INPUT' && activeElement.closest('#inputs')) {
-                                findOptions();
+                fetch('https://simon-36r5.onrender.com/authenticate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ securityKey: enteredKey }) 
+                })
+                .then(response => response.json().then(data => ({ status: response.status, data })))
+                .then(({ status }) => {
+                    if (status === 200) {
+                        document.getElementById("security-screen").style.display = "none";
+                        document.getElementById("inputs").style.display = "block";  
+                        errorMessage.style.visibility = "hidden"; 
+
+                        document.getElementById("email-me").focus();
+
+                        document.addEventListener('keydown', function(event) {
+                            if (event.key === 'Enter') {
+                                let activeElement = document.activeElement;
+                                if (activeElement.tagName === 'INPUT' && activeElement.closest('#inputs')) {
+                                    findOptions();
+                                }
                             }
-                        }
-                    });
+                        });
 
-                } else {
-                    errorMessage.style.visibility = "visible";
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                errorMessage.innerText = "An error occurred. Please try again.";
-                errorMessage.style.visibility = "visible";
-            });
-        }
+                    } else {
+                        errorMessage.style.visibility = "visible"; 
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    errorMessage.innerText = "An error occurred. Please try again.";
+                    errorMessage.style.visibility = "visible"; 
+                });
+            }
+    
     </script>
+
 
     <div id="inputs">
         <h2>Options Locator</h2>
