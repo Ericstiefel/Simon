@@ -11,7 +11,7 @@ def getData(ticker: str):
 
         if contracts:
             for contract in contracts:
-                if contract.contract_type == 'Put':
+                if contract.contract_type == 'put':
                     try:
                         quote = client.get_last_quote(contract.ticker)
                         if quote:
@@ -30,3 +30,10 @@ def getData(ticker: str):
         print(f"An error occurred: {e}")
     
     return (put_ticks, strikes, bids, asks, exp_date)
+
+
+print(getData('AMZN'))
+
+print(getData('TSLA'))
+
+print(getData('GM'))

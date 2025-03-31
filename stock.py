@@ -22,7 +22,7 @@ class Stock:
         month = date_object.month
         day = date_object.day
         tgt = date(year, month, day)
-        today = date.today
+        today = date.today()
         return (tgt-today).days
 
     @staticmethod
