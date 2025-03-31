@@ -118,21 +118,20 @@ def gather_data():
         return jsonify({'error': str(e)}), 400
     
 
-@app.route('/progress', methods=['POST'])
+@app.route('/progress/<request_id>', methods=['GET'])
 def progress(request_id):
     def generate():
         while True:
-            progress_value = progress_data.get(request_id, 0)  # Get the progress, or 0 if not found.
+            progress_value = progress_data.get(request_id, 0)
             yield f"data: {json.dumps({'progress': progress_value})}\n\n"
             if progress_value == 100:
-                break  
-            time.sleep(1)  # Update every second.
+                break
+            time.sleep(1)
 
     return Response(generate(), mimetype='text/event-stream')
 
-@app.route('/results', methods=['POST'])
+@app.route('/results/<request_id>', methods=['GET'])
 def results(request_id):
-    """Retrieve and return the results of the run function."""
     results = results_data.get(request_id)
     if results:
         return jsonify(results)
