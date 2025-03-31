@@ -1,5 +1,5 @@
-flask
-flask_cors
-gunicorn
 polygon-api-client
-setuptools
+Flask
+Flask-Cors
+python-dotenv
+pywin32
