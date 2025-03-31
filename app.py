@@ -123,11 +123,14 @@ def progress(request_id):
         while True:
             progress_value = progress_data.get(request_id, 0)
             yield f"data: {json.dumps({'progress': progress_value})}\n\n"
+            
             if progress_value == 100:
                 break
-            yield ": keep-alive\n\n"
 
+            yield ": keep-alive\n\n"
+            time.sleep(5) 
     return Response(generate(), mimetype='text/event-stream')
+
 
 @app.route('/results/<request_id>', methods=['GET'])
 def results(request_id):
