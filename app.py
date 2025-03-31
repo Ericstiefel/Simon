@@ -1,14 +1,12 @@
-import os
-from flask import Flask, request, Response, jsonify
-from flask_cors import CORS
-import time
-import json
 from io import StringIO
 import threading
 import csv
-
+import time
+from flask import Flask, request, jsonify, Response
+from flask_cors import CORS
 from stock import Stock, runStock
 from data import getData
+import json
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -41,31 +39,33 @@ def run(tickers: list[str], request_id):
         progress_data[request_id] = progress
 
     progress_data[request_id] = 100
-    results_data[request_id] = {"have_winners": [
-        {
+
+    final_results = []
+    for stock in have_winners:
+        stock_results = {
             "tick": stock.tick,
-            "winners": [
-                {
-                    "put1": {
-                        "strike": put1.strike,
-                        "bid": put1.bid,
-                        "ask": put1.ask,
-                        "exp_date": put1.exp_date,
-                    },
-                    "put2": {
-                        "strike": put2.strike,
-                        "bid": put2.bid,
-                        "ask": put2.ask,
-                        "exp_date": put2.exp_date,
-                    },
-                    "midpoint": midpoint,
-                    "yield": yield_val,
-                }
-                for put1, put2, midpoint, yield_val in stock.winners
-            ],
+            "winners": []
         }
-        for stock in have_winners
-    ], "not_processed": not_processed}
+        for put1, put2, midpoint, yield_val in stock.winners:
+            stock_results["winners"].append({
+                "put1": {
+                    "strike": put1.strike,
+                    "bid": put1.bid,
+                    "ask": put1.ask,
+                    "exp_date": put1.exp_date,
+                },
+                "put2": {
+                    "strike": put2.strike,
+                    "bid": put2.bid,
+                    "ask": put2.ask,
+                    "exp_date": put2.exp_date,
+                },
+                "midpoint": midpoint,
+                "yield": yield_val,
+            })
+        final_results.append(stock_results)
+
+    results_data[request_id] = {"have_winners": final_results, "not_processed": not_processed}
     return have_winners, not_processed
 
 @app.route('/authenticate', methods=['POST'])
@@ -116,21 +116,11 @@ def gather_data():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 400
-    
+
 @app.route('/progress/<request_id>', methods=['GET'])
 def progress(request_id):
-    def generate():
-        while True:
-            progress_value = progress_data.get(request_id, 0)
-            yield f"data: {json.dumps({'progress': progress_value})}\n\n"
-            
-            if progress_value == 100:
-                break
-
-            yield ": keep-alive\n\n"
-            time.sleep(5) 
-    return Response(generate(), mimetype='text/event-stream')
-
+    progress_value = progress_data.get(request_id, 0)
+    return jsonify({'progress': progress_value})
 
 @app.route('/results/<request_id>', methods=['GET'])
 def results(request_id):

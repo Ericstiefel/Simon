@@ -184,66 +184,65 @@
 
     <div id="Results">
         <h1>Algo Results</h1>
+        <div id="loadingMessage" style="display: none;">Processing... Please wait.</div>
     </div>
-
+    
     <script>
         let requestId = null;
-
-        function getProgress(requestId) {
-            let eventSource = new EventSource(`https://simon-36r5.onrender.com/progress/${requestId}`);
-            let retryCount = 0; // Keep track of the number of retries
-            const maxRetries = 5; // Maximum number of retries
-
-            eventSource.onerror = function (event) {
-            console.error("EventSource failed.", event); // Log the event to get more information
-            console.log("eventSource.readyState = " + eventSource.readyState); // should be 0 (CONNECTING)
-            eventSource.close();
-            console.log("eventSource.readyState = " + eventSource.readyState); // should be 2 (CLOSED)
-
-            if (retryCount < maxRetries) {
-                const delay = Math.min(5000 * Math.pow(2, retryCount), 60000); // Exponential backoff, max 60s
-                console.warn(`Retrying in ${delay / 1000} seconds...`);
-                setTimeout(() => {
-                retryCount++;
-                getProgress(requestId); // Retry the connection
-                }, delay);
-            } else {
-                console.error("Max retry attempts reached. Giving up.");
-                // Inform the user about the error
-                const errorMessage =
-                "Failed to establish a connection to the server after multiple attempts. Please check your network connection or try again later.";
-                alert(errorMessage);
-            }
-            };
-        }
-
+    
         function getResults(requestId) {
-            fetch(`https://simon-36r5.onrender.com/results/${requestId}`)
-                .then(response => response.json())
-                .then(results => {
-                    console.log("Results:", results);
-                    displayResults(results.have_winners);
-                })
-                .catch(error => {
-                    console.error("Error getting results:", error);
-                });
+            document.getElementById('loadingMessage').style.display = 'block'; // Show loading message
+    
+            function checkProgress() {
+                fetch(`https://simon-36r5.onrender.com/progress/${requestId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.progress === 100) {
+                            fetch(`https://simon-36r5.onrender.com/results/${requestId}`)
+                                .then(response => response.json())
+                                .then(results => {
+                                    document.getElementById('loadingMessage').style.display = 'none'; // Hide loading message
+                                    console.log("Results:", results);
+                                    displayResults(results.have_winners);
+                                })
+                                .catch(error => {
+                                    document.getElementById('loadingMessage').style.display = 'none'; // Hide loading message
+                                    console.error("Error getting results:", error);
+                                    document.getElementById('Results').innerHTML = "<h1>Algo Results</h1><p>Error retrieving results.</p>";
+                                });
+                        } else {
+                            setTimeout(checkProgress, 5000); // Check again after 5 seconds
+                        }
+                    })
+                    .catch(error => {
+                        document.getElementById('loadingMessage').style.display = 'none'; // Hide loading message
+                        console.error("Error checking progress:", error);
+                        document.getElementById('Results').innerHTML = "<h1>Algo Results</h1><p>Error checking progress.</p>";
+                    });
+            }
+    
+            checkProgress();
         }
-
+    
         function displayResults(haveWinners) {
             const resultsDiv = document.getElementById("Results");
             let html = "<h1>Algo Results</h1>";
-
-            haveWinners.forEach(stock => {
-                html += `<h2>${stock.tick}</h2>`;
-                stock.winners.forEach(winner => {
-                    html += `
-                        <p>Put 1: Strike=${winner.put1.strike}, Bid=${winner.put1.bid}, Ask=${winner.put1.ask}, Exp Date=${winner.put1.exp_date}</p>
-                        <p>Put 2: Strike=${winner.put2.strike}, Bid=${winner.put2.bid}, Ask=${winner.put2.ask}, Exp Date=${winner.put2.exp_date}</p>
-                        <p>Midpoint: ${winner.midpoint}, Yield: ${winner.yield}</p>
-                        <hr>`;
+    
+            if (haveWinners && haveWinners.length > 0) {
+                haveWinners.forEach(stock => {
+                    html += `<h2>${stock.tick}</h2>`;
+                    stock.winners.forEach(winner => {
+                        html += `
+                            <p>Put 1: Strike=${winner.put1.strike}, Bid=${winner.put1.bid}, Ask=${winner.put1.ask}, Exp Date=${winner.put1.exp_date}</p>
+                            <p>Put 2: Strike=${winner.put2.strike}, Bid=${winner.put2.bid}, Ask=${winner.put2.ask}, Exp Date=${winner.put2.exp_date}</p>
+                            <p>Midpoint: ${winner.midpoint}, Yield: ${winner.yield}</p>
+                            <hr>`;
+                    });
                 });
-            });
-
+            } else {
+                html += "<p>No winners found.</p>";
+            }
+    
             resultsDiv.innerHTML = html;
         }
     </script>
