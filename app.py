@@ -118,7 +118,7 @@ def gather_data():
         return jsonify({'error': str(e)}), 400
     
 
-@app.route('/progress/<request_id>')
+@app.route('/progress', methods=['POST'])
 def progress(request_id):
     def generate():
         while True:
@@ -130,7 +130,7 @@ def progress(request_id):
 
     return Response(generate(), mimetype='text/event-stream')
 
-@app.route('/results/<request_id>')
+@app.route('/results', methods=['POST'])
 def results(request_id):
     """Retrieve and return the results of the run function."""
     results = results_data.get(request_id)
