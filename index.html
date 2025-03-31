@@ -191,33 +191,29 @@
 
         function getProgress(requestId) {
             let eventSource = new EventSource(`https://simon-36r5.onrender.com/progress/${requestId}`);
-            let retryCount = 0;
-            const maxRetries = 5; // Set a maximum number of retries
+            let retryCount = 0; // Keep track of the number of retries
+            const maxRetries = 5; // Maximum number of retries
 
-            eventSource.onmessage = function(event) {
-                const data = JSON.parse(event.data);
-                document.getElementById('progress').textContent = data.progress;
+            eventSource.onerror = function (event) {
+            console.error("EventSource failed.", event); // Log the event to get more information
+            console.log("eventSource.readyState = " + eventSource.readyState); // should be 0 (CONNECTING)
+            eventSource.close();
+            console.log("eventSource.readyState = " + eventSource.readyState); // should be 2 (CLOSED)
 
-                if (data.progress >= 100) {
-                    eventSource.close();
-                    document.getElementById("Loading-Screen").style.display = "none";
-                    document.getElementById("Results").style.display = "block";
-                    getResults(requestId);
-                }
-            };
-
-            eventSource.onerror = function() {
-                console.error('EventSource failed. Reconnecting...');
-                eventSource.close();
-                if (retryCount < maxRetries) {
-                    const delay = Math.pow(2, retryCount) * 1000; // Exponential backoff
-                    setTimeout(() => {
-                        retryCount++;
-                        getProgress(requestId);
-                    }, delay);
-                } else {
-                    console.error('Max retries reached. Giving up.');
-                }
+            if (retryCount < maxRetries) {
+                const delay = Math.min(5000 * Math.pow(2, retryCount), 60000); // Exponential backoff, max 60s
+                console.warn(`Retrying in ${delay / 1000} seconds...`);
+                setTimeout(() => {
+                retryCount++;
+                getProgress(requestId); // Retry the connection
+                }, delay);
+            } else {
+                console.error("Max retry attempts reached. Giving up.");
+                // Inform the user about the error
+                const errorMessage =
+                "Failed to establish a connection to the server after multiple attempts. Please check your network connection or try again later.";
+                alert(errorMessage);
+            }
             };
         }
 
