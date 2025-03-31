@@ -191,7 +191,7 @@
         let requestId = null;
 
         function getProgress(requestId) {
-            const eventSource = new EventSource(`/progress/${requestId}`);
+            const eventSource = new EventSource(`https://simon-36r5.onrender.com/progress/${requestId}`);
 
             eventSource.onmessage = function(event) {
                 const data = JSON.parse(event.data);
