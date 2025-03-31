@@ -161,7 +161,7 @@
                 formData.append("email", email);
             }
 
-            fetch('/findOptions', {
+            fetch('https://simon-36r5.onrender.com/findOptions', {
                 method: 'POST',
                 body: formData
             })
@@ -181,6 +181,7 @@
     <div id="Loading-Screen">
         <p>Pct Completion: <span id="progress">0</span>%</p>
     </div>
+
 
     <div id="Results">
         <h1>Algo Results</h1>
@@ -211,7 +212,7 @@
         }
 
         function getResults(requestId) {
-            fetch(`/results/${requestId}`)
+            fetch(`https://simon-36r5.onrender.com/results/${requestId}`)
                 .then(response => response.json())
                 .then(results => {
                     console.log("Results:", results);
