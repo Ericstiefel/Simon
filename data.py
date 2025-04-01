@@ -14,7 +14,7 @@ def getData(ticker: str):
                 if contract.contract_type == 'put':
                     try:
                         quote = client.get_last_quote(contract.ticker)
-                        if quote:
+                        if quote and quote.bid_price > 0:
                             put_ticks.append(contract.ticker)
                             bids.append(quote.bid_price)
                             asks.append(quote.ask_price)

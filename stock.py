@@ -41,7 +41,7 @@ class Stock:
     
     @staticmethod
     def validCompare(p1: Put, p2: Put) -> bool:
-        return (p1 != p2) and (p1.exp_date == p2.exp_date) and (p1.strike != p2.strike) and (p1.bid != 0)
+        return (p1 != p2) and (p1.exp_date == p2.exp_date) and (p1.strike != p2.strike) 
 
     
     def evaluate(self, p1: Put, p2: Put):
