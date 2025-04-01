@@ -149,7 +149,7 @@
             }
 
             document.getElementById("inputs").style.display = "none";
-            document.getElementById("Loading-Screen").style.display = "block";
+            document.getElementById("Results").style.display = "block";
 
             let formData = new FormData();
             formData.append("custom_list", customListChecked);
@@ -168,7 +168,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.request_id) {
-                    getProgress(data.request_id);
+                    getResults(data.request_id);
                 } else {
                     console.error("No request_id received:", data);
                 }
@@ -177,11 +177,7 @@
         }
 
     </script>
-
-    <div id="Loading-Screen">
-        <p>Pct Completion: <span id="progress">0</span>%</p>
-    </div>
-
+    
     <div id="Results">
         <h1>Algo Results</h1>
         <div id="loadingMessage" style="display: none;">Processing... Please wait.</div>
