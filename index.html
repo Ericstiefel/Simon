@@ -229,6 +229,7 @@
                     html += `<h2>${stock.tick}</h2>`;
                     stock.winners.forEach(winner => {
                         html += `
+                            <p>Ticker: ${winner.tick}</p>
                             <p>Put 1: Strike=${winner.put1.strike}, Bid=${winner.put1.bid}, Ask=${winner.put1.ask}, Exp Date=${winner.put1.exp_date}</p>
                             <p>Put 2: Strike=${winner.put2.strike}, Bid=${winner.put2.bid}, Ask=${winner.put2.ask}, Exp Date=${winner.put2.exp_date}</p>
                             <p>Midpoint: ${winner.midpoint}, Yield: ${winner.yield}</p>
