@@ -21,8 +21,8 @@ class Stock:
         year = date_object.year
         month = date_object.month
         day = date_object.day
-        tgt = date(year, month, day)
-        today = date.today()
+        tgt = datetime.date(year, month, day)
+        today = datetime.date.today()
         return (tgt-today).days
 
     @staticmethod
@@ -61,7 +61,6 @@ def runStock(stock: Stock, put_tickers: list[str], strikes: list[float], bids: l
 
     #Populate Winners
     stock.populate_winners()
-
 
 
 
