@@ -10,8 +10,16 @@ class Put:
 
 class Stock:
     def __init__(self, tick: str):
+        """
+        Invalid if:
+            >9 mo out
+            negative midpoint
+            bid = 0
+            same strike        
+        """
         self.tick = tick
         self.puts: list[Put] = []
+        self.yld = [i for i in range(6, 11)] #yield values 6-10
         self.winners: list[tuple[Put, Put, float, int]] = [] #P1, P2, Midpoint, Yield
 
     @staticmethod
@@ -31,15 +39,24 @@ class Stock:
         conservative = -P1_ask + P2_bid
         return (aggresive + conservative) / 2
     
+    @staticmethod
+    def validCompare(p1: Put, p2: Put) -> bool:
+        return (p1 != p2) and (p1.exp_date == p2.exp_date) and (p1.strike != p2.strike) and (p1.bid != 0)
+
     
     def evaluate(self, p1: Put, p2: Put):
         exp = p1.exp_date
         days_out = self.days_until(exp)
 
-        midpoint = self.midpoint(p1.bid, p1.ask, p2.bid, p2.ask)
-        yld = [i for i in range(4, 11)] #yield values 4-10
+        if days_out > 270:
+            return
 
-        for y in yld:
+        midpoint = self.midpoint(p1.bid, p1.ask, p2.bid, p2.ask)
+
+        if midpoint <= 0:
+            return
+
+        for y in self.yld:
             score = max(p1.strike, p2.strike)*y*days_out/365
             if score > midpoint:
                 self.winners.append((p1, p2, midpoint, y))
@@ -47,8 +64,9 @@ class Stock:
     def populate_winners(self) -> None:
         for p1_idx in range(len(self.puts)):
             for p2_idx in range(p1_idx, len(self.puts)):
-                if self.puts[p1_idx].exp_date == self.puts[p2_idx].exp_date:
-                    self.evaluate(self.puts[p1_idx], self.puts[p2_idx])
+                p1, p2 = self.puts[p1_idx], self.puts[p2_idx]
+                if self.validCompare(p1, p2):
+                    self.evaluate(p1, p2)
                        
 
 def runStock(stock: Stock, put_tickers: list[str], strikes: list[float], bids: list[float], asks: list[float], exp_dates: list[str]):
