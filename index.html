@@ -219,13 +219,7 @@
         let emailField = document.getElementById("email");
         emailField.style.display = document.getElementById("email-me").checked ? "block" : "none";
     }
-
-    document.getElementById('fileInput').addEventListener('change', function (event) {
-        if (event.target.files.length !== 0) {
-            alert('Selected file: ' + event.target.files[0].name);
-        }
-    });
-
+    
     function findOptions() {
         let emailMe = document.getElementById("email-me").checked;
         let email = document.getElementById("email").value;
