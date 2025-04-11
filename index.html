@@ -4,167 +4,264 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Options Locator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 50px;
+        * {
+            box-sizing: border-box;
         }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f5f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: #fff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            transition: all 0.3s ease-in-out;
+        }
+
+        h1, h2 {
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        input[type="password"],
+        input[type="email"],
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            outline: none;
+            font-size: 16px;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 8px;
+            transform: scale(1.2);
+        }
+
+        label {
+            display: block;
+            text-align: left;
+            margin-top: 20px;
+        }
+
+        button {
+            margin-top: 20px;
+            background-color: #4f46e5;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #4338ca;
+        }
+
         #error-message {
             color: red;
-            margin-top: 5px;
+            margin-top: 10px;
             font-weight: bold;
             visibility: hidden;
         }
-        #inputs {
-            display: none;
-        }
-        #Loading-Screen {
-            display: none;
-        }
+
+        #security-screen,
+        #inputs,
         #Results {
             display: none;
+        }
+
+        #security-screen.active,
+        #inputs.active,
+        #Results.active {
+            display: block;
+        }
+
+        .file-label {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 15px;
+            background-color: #e2e8f0;
+            color: #333;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .file-label:hover {
+            background-color: #cbd5e1;
+        }
+
+        .loading {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #555;
+        }
+
+        hr {
+            margin: 20px 0;
+            border: none;
+            border-top: 1px solid #eee;
         }
     </style>
 </head>
 <body>
 
-    <div id="security-screen">
-        <h2>Enter Security Key</h2>
-        <input type="password" id="security-key" placeholder="Enter Key">
-        <button onclick="authenticateUser()">Submit</button>
-        <p id="error-message">Incorrect key. Try again.</p>
-    </div>
+<div class="container" id="security-screen">
+    <h2>Enter Security Key</h2>
+    <input type="password" id="security-key" placeholder="Enter Key">
+    <button onclick="authenticateUser()">Submit</button>
+    <p id="error-message">Incorrect key. Try again.</p>
+</div>
 
-    <script>
+<div class="container" id="inputs">
+    <h2>Options Locator</h2>
+    <label>
+        <input type="checkbox" id="custom-list" onchange="toggleListInput()"> Custom List
+    </label>
+    <label for="fileInput" class="file-label" id="fileLabel" style="display: none;">Choose CSV File</label>
+    <input type="file" id="fileInput" style="display: none;" accept=".csv"/>
 
-        window.onload = function() {
-            document.getElementById('security-key').focus();
-        };
+    <label>
+        <input type="checkbox" id="email-me" onchange="toggleEmailInput()"> Email me
+    </label>
+    <input type="email" id="email" placeholder="abc@examplemail.com" style="display: none;">
 
-        document.getElementById('security-key').addEventListener('keydown', function(event){
-            if(event.key == 'Enter'){
-                authenticateUser();
-            }
-        });
+    <button onclick="findOptions()">Submit</button>
+</div>
 
-        function authenticateUser() {
-                let enteredKey = document.getElementById("security-key").value;
-                let errorMessage = document.getElementById("error-message");
+<div class="container" id="Results">
+    <h1>Algo Results</h1>
+    <div id="loadingMessage" class="loading" style="display: none;">Processing... Please wait.</div>
+</div>
 
-                fetch('https://simon-36r5.onrender.com/authenticate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ securityKey: enteredKey }) 
-                })
-                .then(response => response.json().then(data => ({ status: response.status, data })))
-                .then(({ status }) => {
-                    if (status === 200) {
-                        document.getElementById("security-screen").style.display = "none";
-                        document.getElementById("inputs").style.display = "block";  
-                        errorMessage.style.visibility = "hidden"; 
+<script>
+    window.onload = function () {
+        document.getElementById('security-key').focus();
+        document.getElementById('security-screen').classList.add('active');
+    };
 
-                        document.getElementById("email-me").focus();
+    document.getElementById('security-key').addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+            authenticateUser();
+        }
+    });
 
-                        document.addEventListener('keydown', function(event) {
-                            if (event.key === 'Enter') {
-                                let activeElement = document.activeElement;
-                                if (activeElement.tagName === 'INPUT' && activeElement.closest('#inputs')) {
-                                    findOptions();
-                                }
+    function authenticateUser() {
+        let enteredKey = document.getElementById("security-key").value;
+        let errorMessage = document.getElementById("error-message");
+
+        fetch('https://simon-36r5.onrender.com/authenticate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ securityKey: enteredKey })
+        })
+            .then(response => response.json().then(data => ({ status: response.status, data })))
+            .then(({ status }) => {
+                if (status === 200) {
+                    document.getElementById("security-screen").classList.remove('active');
+                    document.getElementById("inputs").classList.add('active');
+                    errorMessage.style.visibility = "hidden";
+
+                    document.getElementById("email-me").focus();
+
+                    document.addEventListener('keydown', function (event) {
+                        if (event.key === 'Enter') {
+                            let activeElement = document.activeElement;
+                            if (activeElement.tagName === 'INPUT' && activeElement.closest('#inputs')) {
+                                findOptions();
                             }
-                        });
+                        }
+                    });
 
-                    } else {
-                        errorMessage.style.visibility = "visible"; 
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    errorMessage.innerText = "An error occurred. Please try again.";
-                    errorMessage.style.visibility = "visible"; 
-                });
-            }
-    
-    </script>
-
-
-    <div id="inputs">
-        <h2>Options Locator</h2>
-        <br>
-        <label>
-            <input type="checkbox" id="custom-list" onchange="toggleListInput()"> Custom List (Default is all available securities)
-        </label>
-        <label for="fileInput" class="custom-button" style="display: none;"> Choose CSV File </label>
-        <input type="file" id="fileInput" style="display: none;" accept=".csv"/>
-        <br>
-        <label>
-            <input type="checkbox" id="email-me" onchange="toggleEmailInput()"> Email me
-        </label>
-        <input type="email" id="email" placeholder="abc@examplemail.com" style="display: none;">
-        <br>
-        <button onclick="findOptions()">Submit</button>
-    </div>
-
-    <script>
-        document.getElementById('fileInput').addEventListener('change', function(event) {
-            if (event.target.files.length !== 0) {
-                alert('Selected file: ' + event.target.files[0].name);
-            }
-        });
-
-        function toggleListInput() {
-            let custom = document.getElementById("custom-list");
-            let customList = document.getElementById("fileInput");
-            customList.style.display = custom.checked ? "inline-block" : "none";
-        }
-
-        function toggleEmailInput() {
-            let emailCheckbox = document.getElementById("email-me");
-            let emailField = document.getElementById("email");
-            emailField.style.display = emailCheckbox.checked ? "inline-block" : "none";
-        }
-
-        function findOptions() {
-            let emailMe = document.getElementById("email-me").checked;
-            let email = document.getElementById("email").value;
-            let customListChecked = document.getElementById("custom-list").checked;
-            let fileInput = document.getElementById("fileInput");
-            let errorMessage = document.getElementById("error-message");
-
-            if (customListChecked && fileInput.files.length === 0) {
-                alert("Please select a CSV file.");
-                return;
-            }
-
-            if (customListChecked && fileInput.files[0].type !== "text/csv") {
-                alert("Invalid file type. Please upload a CSV file.");
-                return;
-            }
-
-            if (emailMe && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                errorMessage.innerText = "Not a valid email";
-                errorMessage.style.visibility = "visible";
-                return;
-            }
-
-            document.getElementById("inputs").style.display = "none";
-            document.getElementById("Results").style.display = "block";
-
-            let formData = new FormData();
-            formData.append("custom_list", customListChecked);
-            if (customListChecked && fileInput.files.length > 0) {
-                formData.append("CSVfile", fileInput.files[0]);
-            }
-            formData.append("emailMe", emailMe);
-            if (emailMe) {
-                formData.append("email", email);
-            }
-
-            fetch('https://simon-36r5.onrender.com/findOptions', {
-                method: 'POST',
-                body: formData
+                } else {
+                    errorMessage.style.visibility = "visible";
+                }
             })
+            .catch(error => {
+                console.error('Error:', error);
+                errorMessage.innerText = "An error occurred. Please try again.";
+                errorMessage.style.visibility = "visible";
+            });
+    }
+
+    function toggleListInput() {
+        let custom = document.getElementById("custom-list");
+        document.getElementById("fileInput").style.display = custom.checked ? "block" : "none";
+        document.getElementById("fileLabel").style.display = custom.checked ? "inline-block" : "none";
+    }
+
+    function toggleEmailInput() {
+        let emailField = document.getElementById("email");
+        emailField.style.display = document.getElementById("email-me").checked ? "block" : "none";
+    }
+
+    document.getElementById('fileInput').addEventListener('change', function (event) {
+        if (event.target.files.length !== 0) {
+            alert('Selected file: ' + event.target.files[0].name);
+        }
+    });
+
+    function findOptions() {
+        let emailMe = document.getElementById("email-me").checked;
+        let email = document.getElementById("email").value;
+        let customListChecked = document.getElementById("custom-list").checked;
+        let fileInput = document.getElementById("fileInput");
+        let errorMessage = document.getElementById("error-message");
+
+        if (customListChecked && fileInput.files.length === 0) {
+            alert("Please select a CSV file.");
+            return;
+        }
+
+        if (customListChecked && fileInput.files[0].type !== "text/csv") {
+            alert("Invalid file type. Please upload a CSV file.");
+            return;
+        }
+
+        if (emailMe && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            errorMessage.innerText = "Not a valid email";
+            errorMessage.style.visibility = "visible";
+            return;
+        }
+
+        document.getElementById("inputs").classList.remove("active");
+        document.getElementById("Results").classList.add("active");
+
+        let formData = new FormData();
+        formData.append("custom_list", customListChecked);
+        if (customListChecked && fileInput.files.length > 0) {
+            formData.append("CSVfile", fileInput.files[0]);
+        }
+        formData.append("emailMe", emailMe);
+        if (emailMe) {
+            formData.append("email", email);
+        }
+
+        fetch('https://simon-36r5.onrender.com/findOptions', {
+            method: 'POST',
+            body: formData
+        })
             .then(response => response.json())
             .then(data => {
                 if (data.request_id) {
@@ -174,75 +271,61 @@
                 }
             })
             .catch(error => console.error("Error:", error));
-        }
+    }
 
-    </script>
-    
-    <div id="Results">
-        <h1>Algo Results</h1>
-        <div id="loadingMessage" style="display: none;">Processing... Please wait.</div>
-    </div>
-    
-    <script>
-        let requestId = null;
-    
-        function getResults(requestId) {
-            document.getElementById('loadingMessage').style.display = 'block'; // Show loading message
-    
-            function checkProgress() {
-                fetch(`https://simon-36r5.onrender.com/progress/${requestId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.progress === 100) {
-                            fetch(`https://simon-36r5.onrender.com/results/${requestId}`)
-                                .then(response => response.json())
-                                .then(results => {
-                                    document.getElementById('loadingMessage').style.display = 'none'; // Hide loading message
-                                    console.log("Results:", results);
-                                    displayResults(results.have_winners);
-                                })
-                                .catch(error => {
-                                    document.getElementById('loadingMessage').style.display = 'none'; // Hide loading message
-                                    console.error("Error getting results:", error);
-                                    document.getElementById('Results').innerHTML = "<h1>Algo Results</h1><p>Error retrieving results.</p>";
-                                });
-                        } else {
-                            setTimeout(checkProgress, 5000); // Check again after 5 seconds
-                        }
-                    })
-                    .catch(error => {
-                        document.getElementById('loadingMessage').style.display = 'none'; // Hide loading message
-                        console.error("Error checking progress:", error);
-                        document.getElementById('Results').innerHTML = "<h1>Algo Results</h1><p>Error checking progress.</p>";
-                    });
-            }
-    
-            checkProgress();
-        }
-    
-        function displayResults(haveWinners) {
-            const resultsDiv = document.getElementById("Results");
-            let html = "<h1>Algo Results</h1>";
-    
-            if (haveWinners && haveWinners.length > 0) {
-                haveWinners.forEach(stock => {
-                    html += `<h2>${stock.tick}</h2>`;
-                    stock.winners.forEach(winner => {
-                        html += `
-                            <p>Ticker: ${winner.tick}</p>
-                            <p>Put 1: Strike=${winner.put1.strike}, Bid=${winner.put1.bid}, Ask=${winner.put1.ask}, Exp Date=${winner.put1.exp_date}</p>
-                            <p>Put 2: Strike=${winner.put2.strike}, Bid=${winner.put2.bid}, Ask=${winner.put2.ask}, Exp Date=${winner.put2.exp_date}</p>
-                            <p>Midpoint: ${winner.midpoint}, Yield: ${winner.yield}</p>
-                            <hr>`;
-                    });
+    function getResults(requestId) {
+        document.getElementById('loadingMessage').style.display = 'block';
+
+        function checkProgress() {
+            fetch(`https://simon-36r5.onrender.com/progress/${requestId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.progress === 100) {
+                        fetch(`https://simon-36r5.onrender.com/results/${requestId}`)
+                            .then(response => response.json())
+                            .then(results => {
+                                document.getElementById('loadingMessage').style.display = 'none';
+                                displayResults(results.have_winners);
+                            })
+                            .catch(error => {
+                                document.getElementById('loadingMessage').style.display = 'none';
+                                document.getElementById('Results').innerHTML += "<p>Error retrieving results.</p>";
+                            });
+                    } else {
+                        setTimeout(checkProgress, 5000);
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('loadingMessage').style.display = 'none';
+                    document.getElementById('Results').innerHTML += "<p>Error checking progress.</p>";
                 });
-            } else {
-                html += "<p>No winners found.</p>";
-            }
-    
-            resultsDiv.innerHTML = html;
         }
-    </script>
 
+        checkProgress();
+    }
+
+    function displayResults(haveWinners) {
+        const resultsDiv = document.getElementById("Results");
+        let html = "<h1>Algo Results</h1>";
+
+        if (haveWinners && haveWinners.length > 0) {
+            haveWinners.forEach(stock => {
+                html += `<h2>${stock.tick}</h2>`;
+                stock.winners.forEach(winner => {
+                    html += `
+                        <p><strong>Ticker:</strong> ${winner.tick}</p>
+                        <p><strong>Put 1:</strong> Strike=${winner.put1.strike}, Bid=${winner.put1.bid}, Ask=${winner.put1.ask}, Exp Date=${winner.put1.exp_date}</p>
+                        <p><strong>Put 2:</strong> Strike=${winner.put2.strike}, Bid=${winner.put2.bid}, Ask=${winner.put2.ask}, Exp Date=${winner.put2.exp_date}</p>
+                        <p><strong>Midpoint:</strong> ${winner.midpoint}, <strong>Yield:</strong> ${winner.yield}</p>
+                        <hr>`;
+                });
+            });
+        } else {
+            html += "<p>No winners found.</p>";
+        }
+
+        resultsDiv.innerHTML = html;
+    }
+</script>
 </body>
 </html>
