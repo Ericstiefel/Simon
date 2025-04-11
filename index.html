@@ -171,7 +171,7 @@
         let enteredKey = document.getElementById("security-key").value;
         let errorMessage = document.getElementById("error-message");
 
-        fetch('https://52.14.248.132:5000/authenticate', {
+        fetch('https://52.14.248.132:5001/authenticate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ securityKey: enteredKey })
@@ -252,7 +252,7 @@
             formData.append("email", email);
         }
 
-        fetch('https://52.14.248.132:5000/findOptions', {
+        fetch('https://52.14.248.132:5001/findOptions', {
             method: 'POST',
             body: formData
         })
@@ -271,11 +271,11 @@
         document.getElementById('loadingMessage').style.display = 'block';
 
         function checkProgress() {
-            fetch(`https://52.14.248.132:5000/${requestId}`)
+            fetch(`https://52.14.248.132:5001/${requestId}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.progress === 100) {
-                        fetch(`https://52.14.248.132:5000/results/${requestId}`)
+                        fetch(`https://52.14.248.132:5001/results/${requestId}`)
                             .then(response => response.json())
                             .then(results => {
                                 document.getElementById('loadingMessage').style.display = 'none';
