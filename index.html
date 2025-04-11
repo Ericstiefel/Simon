@@ -279,16 +279,21 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.progress === 100) {
-                        fetch(`https://52.14.248.132:5000/results/${requestId}`)
-                            .then(response => response.json())
-                            .then(results => {
-                                document.getElementById('loadingMessage').style.display = 'none';
-                                displayResults(results.have_winners);
-                            })
-                            .catch(error => {
-                                document.getElementById('loadingMessage').style.display = 'none';
-                                document.getElementById('Results').innerHTML += "<p>Error retrieving results.</p>";
-                            });
+                        // Add a short delay before fetching results
+                        setTimeout(() => {
+                            fetch(`https://52.14.248.132:5000/results/${requestId}`)
+                                .then(response => response.json())
+                                .then(results => {
+                                    console.log("Fetched results:", results); // Added logging for debugging
+                                    document.getElementById('loadingMessage').style.display = 'none';
+                                    displayResults(results.have_winners);
+                                })
+                                .catch(error => {
+                                    console.error("Error fetching results:", error);
+                                    document.getElementById('loadingMessage').style.display = 'none';
+                                    document.getElementById('Results').innerHTML += "<p>Error retrieving results.</p>";
+                                });
+                        }, 2000); // Wait 2 seconds before fetching results
                     } else {
                         setTimeout(checkProgress, 5000);
                     }
@@ -303,6 +308,9 @@
     }
 
     function displayResults(haveWinners) {
+        console.log("Displaying results:", haveWinners); //Added logging for debugging
+
+
         const resultsDiv = document.getElementById("Results");
         let html = "<h1>Algo Results</h1>";
 
