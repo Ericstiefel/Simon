@@ -171,7 +171,7 @@
         let enteredKey = document.getElementById("security-key").value;
         let errorMessage = document.getElementById("error-message");
 
-        fetch('http://52.14.248.132:5000/authenticate', {
+        fetch('https://52.14.248.132:5000/authenticate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ securityKey: enteredKey })
@@ -179,24 +179,20 @@
             .then(response => response.json().then(data => ({ status: response.status, data })))
             .then(({ status }) => {
                 if (status === 200) {
-                    fetch('https://52.14.248.132:5000/trigger', {
-                         method: 'POST'
-                    });
-                
-                    document.getElementById("security-screen").classList.remove('active');
-                    document.getElementById("inputs").classList.add('active');
-                    errorMessage.style.visibility = "hidden";
+                        document.getElementById("security-screen").style.display = "none";
+                        document.getElementById("inputs").style.display = "block";  
+                        errorMessage.style.visibility = "hidden"; 
 
-                    document.getElementById("email-me").focus();
+                        document.getElementById("email-me").focus();
 
-                    document.addEventListener('keydown', function (event) {
-                        if (event.key === 'Enter') {
-                            let activeElement = document.activeElement;
-                            if (activeElement.tagName === 'INPUT' && activeElement.closest('#inputs')) {
-                                findOptions();
+                        document.addEventListener('keydown', function(event) {
+                            if (event.key === 'Enter') {
+                                let activeElement = document.activeElement;
+                                if (activeElement.tagName === 'INPUT' && activeElement.closest('#inputs')) {
+                                    findOptions();
+                                }
                             }
-                        }
-                    });
+                        });
 
                 } else {
                     errorMessage.style.visibility = "visible";
