@@ -179,6 +179,10 @@
             .then(response => response.json().then(data => ({ status: response.status, data })))
             .then(({ status }) => {
                 if (status === 200) {
+                    fetch('http://52.14.248.132:5000/trigger', {
+                         method: 'POST'
+                    });
+                
                     document.getElementById("security-screen").classList.remove('active');
                     document.getElementById("inputs").classList.add('active');
                     errorMessage.style.visibility = "hidden";
