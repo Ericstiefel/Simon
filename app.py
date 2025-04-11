@@ -17,6 +17,8 @@ SECURITY_KEY = "EricStiefel8"
 progress_data = {}
 results_data = {}  # Store results for each request
 
+
+# @profile
 def run(tickers: list[str], request_id):
     """Function to process the ticker list and update progress."""
     have_winners: list[Stock] = []
@@ -139,4 +141,3 @@ if __name__ == '__main__':
 """
 
 print(run(['NIO', 'AMZN'], time.time()))
-    
