@@ -1,8 +1,13 @@
 from polygon.rest import RESTClient
+from dotenv import load_dotenv
+import os
 
+# Import API key from environment variables
+load_dotenv()
+POLYGON_API_KEY = os.getenv("POLYGON_API_KEY")
 def getData(ticker: str):
 
-    client = RESTClient("auOHryygFSSTd3xM8kpKxpxMHZq_MvF7")
+    client = RESTClient((POLYGON_API_KEY))
 
     put_ticks, strikes, bids, asks, exp_date = [], [], [], [], []
 
