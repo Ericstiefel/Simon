@@ -3,7 +3,7 @@ import os
 import threading
 import csv
 import time
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from stock import Stock, runStock
 from data import getData
@@ -17,8 +17,15 @@ SECURITY_KEY = "EricStiefel8"
 progress_data = {}
 results_data = {}  # Store results for each request
 
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(
+        os.path.join(app.root_path, 'static'),
+        'favicon.ico',
+        mimetype='image/vnd.microsoft.icon'
+    )
 
-# @profile
+
 def run(tickers: list[str], request_id):
     """Function to process the ticker list and update progress."""
     have_winners: list[Stock] = []
