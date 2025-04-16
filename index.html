@@ -271,7 +271,7 @@
         document.getElementById('loadingMessage').style.display = 'block';
 
         function checkProgress() {
-            fetch(`https://api.simonapi.xyz/${requestId}`)
+            fetch(`https://api.simonapi.xyz/progress${requestId}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.progress === 100) {
