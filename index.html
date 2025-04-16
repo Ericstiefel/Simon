@@ -171,7 +171,7 @@
         let enteredKey = document.getElementById("security-key").value;
         let errorMessage = document.getElementById("error-message");
 
-        fetch('http://52.14.248.132:5001/authenticate', {
+        fetch('https://api.simonapi.xyz/authenticate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ securityKey: enteredKey })
@@ -252,7 +252,7 @@
             formData.append("email", email);
         }
 
-        fetch('http://52.14.248.132:5001/findOptions', {
+        fetch('https://api.simonapi.xyz/findOptions', {
             method: 'POST',
             body: formData
         })
@@ -271,11 +271,11 @@
         document.getElementById('loadingMessage').style.display = 'block';
 
         function checkProgress() {
-            fetch(`http://52.14.248.132:5001/${requestId}`)
+            fetch(`https://api.simonapi.xyz/${requestId}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.progress === 100) {
-                        fetch(`http://52.14.248.132:5001/results/${requestId}`)
+                        fetch(`https://api.simonapi.xyz/results/${requestId}`)
                             .then(response => response.json())
                             .then(results => {
                                 document.getElementById('loadingMessage').style.display = 'none';
