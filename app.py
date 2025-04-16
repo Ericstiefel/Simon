@@ -96,29 +96,23 @@ def gather_data():
         if custom_list:
             csv_file = request.files['CSVfile']
 
-            # Read the CSV file content
             csv_content = csv_file.stream.read().decode("utf-8")
             csv_reader = csv.reader(StringIO(csv_content))
 
-            # Convert CSV data to a list of tickers (assuming first column)
             ticker_list = [row[0] for row in csv_reader if row]
 
             email_me = request.form.get('emailMe', 'false') == 'true'
             if email_me:
                 email = request.form.get('email', '')
 
-            # Generate a unique request ID
             request_id = str(time.time())
-
-            # Initialize progress
             progress_data[request_id] = 0
 
-            # Start the processing in a separate thread, passing request_id
             threading.Thread(target=run, args=(ticker_list, request_id)).start()
 
             return jsonify({
                 'message': 'File received successfully',
-                'request_id': request_id,  # return the request ID
+                'request_id': request_id,  
             }), 200
 
         else:
@@ -141,4 +135,4 @@ def results(request_id):
         return jsonify({"error": "Results not found"}), 404
     
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5001)
+    app.run(debug=False, host="0.0.0.0", port=5001)
