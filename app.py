@@ -9,10 +9,7 @@ from stock import Stock, runStock
 from data import getData
 
 app = Flask(__name__)
-CORS(app,
-     origins=["https://simonapi.xyz"],
-     methods=["POST", "OPTIONS"],
-     allow_headers=["Content-Type"])
+CORS(app, origins=["https://simonapi.xyz"])
 
 SECURITY_KEY = "EricStiefel8"
 
@@ -30,8 +27,6 @@ def favicon():
 
 @app.route('/authenticate', methods=['POST'])
 def authenticate():
-    if request.method == 'OPTIONS':
-        return '', 204  
     data = request.json
     if not data or data.get("securityKey") != SECURITY_KEY:
         return jsonify({"error": "Unauthorized access"}), 403
