@@ -9,7 +9,10 @@ from stock import Stock, runStock
 from data import getData
 
 app = Flask(__name__)
-CORS(app, origins="https://simonapi.xyz")
+CORS(app,
+     origins=["https://simonapi.xyz"],
+     methods=["POST", "OPTIONS"],
+     allow_headers=["Content-Type"])
 
 SECURITY_KEY = "EricStiefel8"
 
@@ -24,58 +27,6 @@ def favicon():
         mimetype='image/vnd.microsoft.icon'
     )
 
-
-def run(tickers: list[str], request_id):
-    """Function to process the ticker list and update progress."""
-    have_winners: list[Stock] = []
-    not_processed = []
-    total_tickers = len(tickers)
-
-    for i, tick in enumerate(tickers):
-        try:
-            put_ticks, strikes, bids, asks, exp_dates = getData(tick)
-            stock = Stock(tick)
-            runStock(stock, put_ticks, strikes, bids, asks, exp_dates)
-
-            if stock.winners:
-                have_winners.append(stock)
-
-        except Exception as e:
-            print(f"An error occurred while processing {tick}: {e}")
-            not_processed.append(tick)
-
-        progress = int((i + 1) / total_tickers * 100)
-        progress_data[request_id] = progress
-
-    progress_data[request_id] = 100
-
-    final_results = []
-    for stock in have_winners:
-        stock_results = {
-            "tick": stock.tick,
-            "winners": []
-        }
-        for put1, put2, midpoint, yield_val in stock.winners:
-            stock_results["winners"].append({
-                "put1": {
-                    "strike": put1.strike,
-                    "bid": put1.bid,
-                    "ask": put1.ask,
-                    "exp_date": put1.exp_date,
-                },
-                "put2": {
-                    "strike": put2.strike,
-                    "bid": put2.bid,
-                    "ask": put2.ask,
-                    "exp_date": put2.exp_date,
-                },
-                "midpoint": midpoint,
-                "yield": yield_val,
-            })
-        final_results.append(stock_results)
-
-    results_data[request_id] = {"have_winners": final_results, "not_processed": not_processed}
-    return have_winners, not_processed
 
 @app.route('/authenticate', methods=['POST'])
 def authenticate():
@@ -134,6 +85,58 @@ def results(request_id):
         return jsonify(results)
     else:
         return jsonify({"error": "Results not found"}), 404
+    
+def run(tickers: list[str], request_id):
+    """Function to process the ticker list and update progress."""
+    have_winners: list[Stock] = []
+    not_processed = []
+    total_tickers = len(tickers)
+
+    for i, tick in enumerate(tickers):
+        try:
+            put_ticks, strikes, bids, asks, exp_dates = getData(tick)
+            stock = Stock(tick)
+            runStock(stock, put_ticks, strikes, bids, asks, exp_dates)
+
+            if stock.winners:
+                have_winners.append(stock)
+
+        except Exception as e:
+            print(f"An error occurred while processing {tick}: {e}")
+            not_processed.append(tick)
+
+        progress = int((i + 1) / total_tickers * 100)
+        progress_data[request_id] = progress
+
+    progress_data[request_id] = 100
+
+    final_results = []
+    for stock in have_winners:
+        stock_results = {
+            "tick": stock.tick,
+            "winners": []
+        }
+        for put1, put2, midpoint, yield_val in stock.winners:
+            stock_results["winners"].append({
+                "put1": {
+                    "strike": put1.strike,
+                    "bid": put1.bid,
+                    "ask": put1.ask,
+                    "exp_date": put1.exp_date,
+                },
+                "put2": {
+                    "strike": put2.strike,
+                    "bid": put2.bid,
+                    "ask": put2.ask,
+                    "exp_date": put2.exp_date,
+                },
+                "midpoint": midpoint,
+                "yield": yield_val,
+            })
+        final_results.append(stock_results)
+
+    results_data[request_id] = {"have_winners": final_results, "not_processed": not_processed}
+    return have_winners, not_processed
     
 if __name__ == "__main__":
     app.run(debug=False, host="0.0.0.0", port=5001)
