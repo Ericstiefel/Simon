@@ -10,7 +10,7 @@ from data import getData
 import json
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(app, resources={r"/*": {"origins": "https://simonapi.xyz"}}, supports_credentials=True)
 
 SECURITY_KEY = "EricStiefel8"
 
