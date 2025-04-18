@@ -7,10 +7,9 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from stock import Stock, runStock
 from data import getData
-import json
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "https://simonapi.xyz"}}, supports_credentials=True)
+CORS(app, origins="https://simonapi.xyz")
 
 SECURITY_KEY = "EricStiefel8"
 
@@ -80,6 +79,8 @@ def run(tickers: list[str], request_id):
 
 @app.route('/authenticate', methods=['POST'])
 def authenticate():
+    if request.method == 'OPTIONS':
+        return '', 204  
     data = request.json
     if not data or data.get("securityKey") != SECURITY_KEY:
         return jsonify({"error": "Unauthorized access"}), 403
