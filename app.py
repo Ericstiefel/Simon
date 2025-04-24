@@ -9,7 +9,8 @@ from stock import Stock, runStock
 from data import getData
 
 app = Flask(__name__)
-CORS(app, origins=["https://simonapi.xyz"])
+CORS(app, resources={r"/*": {"origins": "*"}})  # REPLACE
+
 
 SECURITY_KEY = "EricStiefel8"
 
@@ -25,12 +26,17 @@ def favicon():
     )
 
 
-@app.route('/authenticate', methods=['POST'])
+@app.route('/authenticate', methods=['POST', 'OPTIONS'])
 def authenticate():
+    if request.method == 'OPTIONS':
+        # CORS preflight
+        return jsonify({'status': 'OK'}), 200
+
     data = request.json
     if not data or data.get("securityKey") != SECURITY_KEY:
         return jsonify({"error": "Unauthorized access"}), 403
     return jsonify({"message": "Authentication successful"}), 200
+
 
 @app.route('/findOptions', methods=['POST'])
 def gather_data():
