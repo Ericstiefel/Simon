@@ -39,20 +39,20 @@ def getData(ticker: str):
 
     put_ticks, strikes, bids, asks, exp_date = [], [], [], [], []
 
-    today = datetime.today().strftime("%Y-%m-%d")
-    future_date = (datetime.today() + timedelta(days=270)).strftime("%Y-%m-%d") # 270 days from today
+    earliest = (datetime.today() + timedelta(days=61)).strftime("%Y-%m-%d")
+    future_date = (datetime.today() + timedelta(days=270)).strftime("%Y-%m-%d") 
 
     curr_price = price_approx(ticker)
     
     pct_barrier = 0.2
 
-    min_b, max_b = (2-pct_barrier)*curr_price, (2+pct_barrier)*curr_price
+    min_b, max_b = (1-pct_barrier)*curr_price, (1+pct_barrier)*curr_price
 
     try:
         contracts = list(client.list_options_contracts(
             underlying_ticker=ticker,
             contract_type="put",
-            expiration_date_gte=today,
+            expiration_date_gte=earliest,
             expiration_date_lte=future_date,
             strike_price_gt=min_b,
             strike_price_lt=max_b
