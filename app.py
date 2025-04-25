@@ -12,7 +12,7 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  # REPLACE
 
 
-SECURITY_KEY = "EricStiefel8"
+SECURITY_KEY = "Simon"
 
 progress_data = {}
 results_data = {}  # Store results for each request
