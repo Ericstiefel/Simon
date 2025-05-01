@@ -5,7 +5,7 @@ import os
 
 load_dotenv()
 
-def send_outlook_email(subject, body, to_email):
+def email(address, subject, body):
     # Get credentials from the environment
     from_email = os.getenv("OUTLOOK_EMAIL")
     password = os.getenv("OUTLOOK_APP_PASSWORD")
@@ -18,7 +18,7 @@ def send_outlook_email(subject, body, to_email):
     msg.set_content(body)
     msg["Subject"] = subject
     msg["From"] = from_email
-    msg["To"] = to_email
+    msg["To"] = address
 
     try:
         with smtplib.SMTP("smtp.office365.com", 587) as smtp:
