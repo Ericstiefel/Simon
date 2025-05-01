@@ -7,9 +7,10 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from stock import Stock, runStock
 from data import getData
+from Email import email
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})  # REPLACE
+CORS(app, resources={r"/*": {"origins": "*"}})  
 
 
 SECURITY_KEY = "Simon"
@@ -56,7 +57,11 @@ def gather_data():
 
             email_me = request.form.get('emailMe', 'false') == 'true'
             if email_me:
-                email = request.form.get('email', '')
+                email_address = request.form.get('email', '')
+            else:
+                email_address = None
+
+            threading.Thread(target=run, args=(ticker_list, request_id, email_address)).start()
 
             request_id = str(time.time())
             progress_data[request_id] = 0
@@ -87,7 +92,7 @@ def results(request_id):
     else:
         return jsonify({"error": "Results not found"}), 404
     
-def run(tickers: list[str], request_id):
+def run(tickers: list[str], request_id, email_address=None):
     """Function to process the ticker list and update progress."""
     have_winners: list[Stock] = []
     not_processed = []
@@ -95,8 +100,9 @@ def run(tickers: list[str], request_id):
 
     for i, tick in enumerate(tickers):
         try:
-            put_ticks, strikes, bids, asks, exp_dates = getData(tick)
+            price_approx, put_ticks, strikes, bids, asks, exp_dates = getData(tick)
             stock = Stock(tick)
+            stock.price_app = price_approx
             runStock(stock, put_ticks, strikes, bids, asks, exp_dates)
 
             if stock.winners:
@@ -115,6 +121,7 @@ def run(tickers: list[str], request_id):
     for stock in have_winners:
         stock_results = {
             "tick": stock.tick,
+            "price_app": stock.price_app,
             "winners": []
         }
         for put1, put2, midpoint, yield_val in stock.winners:
@@ -136,8 +143,19 @@ def run(tickers: list[str], request_id):
             })
         final_results.append(stock_results)
 
+        # If email is enabled, send an email per ticker
+        if email_address:
+            body = "\n".join(
+                f"Put1: Strike {put1.strike}, Bid {put1.bid}, Ask {put1.ask}, Exp {put1.exp_date} | "
+                f"Put2: Strike {put2.strike}, Bid {put2.bid}, Ask {put2.ask}, Exp {put2.exp_date} | "
+                f"Midpoint: {midpoint}, Yield: {yield_val}"
+                for put1, put2, midpoint, yield_val in stock.winners
+            )
+            email(address=email_address, subject=stock.tick, body=body)
+
     results_data[request_id] = {"have_winners": final_results, "not_processed": not_processed}
     return have_winners, not_processed
+
     
 if __name__ == "__main__":
     app.run(debug=False, host="0.0.0.0", port=5001)

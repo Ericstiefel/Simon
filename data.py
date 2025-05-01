@@ -46,7 +46,7 @@ def getData(ticker: str):
     
     pct_barrier = 0.2
 
-    min_b, max_b = (1-pct_barrier)*curr_price, (1+pct_barrier)*curr_price
+    max_b = (1+pct_barrier)*curr_price
 
     try:
         contracts = list(client.list_options_contracts(
@@ -54,7 +54,6 @@ def getData(ticker: str):
             contract_type="put",
             expiration_date_gte=earliest,
             expiration_date_lte=future_date,
-            strike_price_gt=min_b,
             strike_price_lt=max_b
         ))
 
@@ -77,4 +76,4 @@ def getData(ticker: str):
     except Exception as e:
         print(f"An error occurred: {e}")
 
-    return (put_ticks, strikes, bids, asks, exp_date)
+    return curr_price, put_ticks, strikes, bids, asks, exp_date

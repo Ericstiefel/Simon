@@ -157,6 +157,9 @@
     <div id="loadingMessage" class="loading" style="display: none;">Processing... Please wait.</div>
 </div>
 
+<div id="tickerPrices" style="text-align: left; margin-top: 20px;"></div>
+
+
 <script>
     window.onload = function () {
         document.getElementById('security-key').focus();
@@ -304,8 +307,39 @@
         const resultsDiv = document.getElementById("Results");
         let html = "<h1>Algo Results</h1>";
 
+        let tickerPriceHTML = `
+            <h2>Approximate Ticker Prices</h2>
+            <table style="
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 30px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                border-radius: 10px;
+                overflow: hidden;
+            ">
+                <thead style="background-color: #4a90e2; color: white;">
+                    <tr>
+                        <th style="padding: 12px; text-align: left;">Ticker</th>
+                        <th style="padding: 12px; text-align: right;">Approx. Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
         if (haveWinners && haveWinners.length > 0) {
             haveWinners.forEach(stock => {
+                // Use backend-provided price
+                const approxPrice = parseFloat(stock.price_app).toFixed(2);
+
+                // Add to table
+                tickerPriceHTML += `
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 10px 12px;">${stock.tick}</td>
+                        <td style="padding: 10px 12px; text-align: right;">$${approxPrice}</td>
+                    </tr>
+                `;
+
+                // Add full option info
                 html += `<h2>${stock.tick}</h2>`;
                 stock.winners.forEach(winner => {
                     html += `
@@ -316,12 +350,17 @@
                         <hr>`;
                 });
             });
+
+            tickerPriceHTML += `</tbody></table>`;
         } else {
             html += "<p>No winners found.</p>";
+            tickerPriceHTML = "";
         }
 
         resultsDiv.innerHTML = html;
-    }
+        document.getElementById("tickerPrices").innerHTML = tickerPriceHTML;
+}
+
 </script>
 </body>
 </html>
