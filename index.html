@@ -328,14 +328,11 @@
 
         if (haveWinners && haveWinners.length > 0) {
             haveWinners.forEach(stock => {
-                // Use backend-provided price
-                const approxPrice = parseFloat(stock.price_app).toFixed(2);
-
                 // Add to table
                 tickerPriceHTML += `
                     <tr style="border-bottom: 1px solid #eee;">
                         <td style="padding: 10px 12px;">${stock.tick}</td>
-                        <td style="padding: 10px 12px; text-align: right;">$${approxPrice}</td>
+                        <td style="padding: 10px 12px; text-align: right;">$${stock.price_app}</td>
                     </tr>
                 `;
 
@@ -357,9 +354,8 @@
             tickerPriceHTML = "";
         }
 
-        resultsDiv.innerHTML = html;
         document.getElementById("tickerPrices").innerHTML = tickerPriceHTML;
-}
+    }
 
 </script>
 </body>

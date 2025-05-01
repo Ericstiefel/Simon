@@ -6,12 +6,12 @@ import os
 load_dotenv()
 
 def email(address, subject, body):
-    # Get credentials from the environment
-    from_email = os.getenv("OUTLOOK_EMAIL")
-    password = os.getenv("OUTLOOK_APP_PASSWORD")
+    # Get Gmail credentials from the environment
+    from_email = os.getenv("GMAIL_EMAIL")
+    password = os.getenv("GMAIL_PASSWORD")  
 
     if not from_email or not password:
-        print("Error: Please set the OUTLOOK_EMAIL and OUTLOOK_APP_PASSWORD in the .env file.")
+        print("Error: Please set the GMAIL_EMAIL and GMAIL_APP_PASSWORD (or GMAIL_PASSWORD) in the .env file.")
         return
 
     msg = EmailMessage()
@@ -21,10 +21,12 @@ def email(address, subject, body):
     msg["To"] = address
 
     try:
-        with smtplib.SMTP("smtp.office365.com", 587) as smtp:
-            smtp.starttls()  # Upgrade to secure connection
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:  # Use SMTP_SSL for port 465
             smtp.login(from_email, password)
             smtp.send_message(msg)
-            print("Email sent successfully.")
+            print("Email sent successfully via Gmail.")
     except Exception as e:
-        print(f"Error sending email: {e}")
+        print(f"Error sending email via Gmail: {e}")
+
+# Example usage remains the same
+email('ericslide318@gmail.com', 'check', 'This worked via Gmail')
