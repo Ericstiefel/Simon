@@ -1,12 +1,30 @@
+import smtplib
+from email.message import EmailMessage
+from dotenv import load_dotenv
+import os
 
-import win32com.client as win32
+load_dotenv()
 
-def email(address: str, subject: str, body: str):
-    
-    outlook = win32.Dispatch('outlook.application')
-    mail = outlook.CreateItem(0)
-    mail.To = address
-    mail.Subject = subject
-    mail.Body = body
+def send_outlook_email(subject, body, to_email):
+    # Get credentials from the environment
+    from_email = os.getenv("OUTLOOK_EMAIL")
+    password = os.getenv("OUTLOOK_APP_PASSWORD")
 
-    mail.Send()
+    if not from_email or not password:
+        print("Error: Please set the OUTLOOK_EMAIL and OUTLOOK_APP_PASSWORD in the .env file.")
+        return
+
+    msg = EmailMessage()
+    msg.set_content(body)
+    msg["Subject"] = subject
+    msg["From"] = from_email
+    msg["To"] = to_email
+
+    try:
+        with smtplib.SMTP("smtp.office365.com", 587) as smtp:
+            smtp.starttls()  # Upgrade to secure connection
+            smtp.login(from_email, password)
+            smtp.send_message(msg)
+            print("Email sent successfully.")
+    except Exception as e:
+        print(f"Error sending email: {e}")
