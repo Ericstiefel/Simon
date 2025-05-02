@@ -40,8 +40,9 @@ class Stock:
         return (aggresive + conservative) / 2
     
     @staticmethod
-    def validCompare(p1: Put, p2: Put) -> bool:
-        return (p1 != p2) and (p1.exp_date == p2.exp_date) and (p1.strike != p2.strike) 
+    def validCompare(p1: Put, p2: Put, max_strike_split: float = .25) -> bool:
+        strike_diff: bool = abs((p1.strike - p2.strike) / p2.strike) < max_strike_split
+        return (p1 != p2) and (p1.exp_date == p2.exp_date) and (p1.strike != p2.strike) and strike_diff
 
     
     def evaluate(self, p1: Put, p2: Put):
