@@ -63,7 +63,11 @@ class Stock:
         seen = set()
         for p1_idx in range(len(self.puts)):
             for p2_idx in range(p1_idx, len(self.puts)):
-                p1, p2 = min(self.puts[p2_idx].strike, self.puts[p1_idx].strike), max(self.puts[p2_idx].strike, self.puts[p1_idx].strike)
+                p1, p2 = self.puts[p1_idx], self.puts[p2_idx]
+                if p1.strike > p2.strike:
+                    dummy: Put = p2
+                    p2 = p1
+                    p1 = dummy
                 if (p1, p2) not in seen:
                     seen.add((p1,p2))
                     if self.validCompare(p1, p2):

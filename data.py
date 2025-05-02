@@ -32,7 +32,7 @@ def getData(ticker: str):
 
     curr_stock = client.get_last_quote(ticker)
     
-    curr_price = (curr_stock.bid_price + curr_stock.ask_size) / 2
+    curr_price = curr_stock.ask_price
     
     pct_barrier = 0.2
 
