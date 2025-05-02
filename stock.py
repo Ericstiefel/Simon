@@ -55,7 +55,7 @@ class Stock:
 
         for y in reversed(self.yld):
             score = (y/36500)*days_out*max(p1.strike, p2.strike)
-            if score > midpoint:
+            if score < midpoint:
                 self.winners.append((p1, p2, midpoint, y))
                 return
 
