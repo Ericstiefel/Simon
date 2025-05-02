@@ -18,7 +18,6 @@ class Stock:
             same strike        
         """
         self.tick = tick
-        self.price_app = 0
         self.puts: list[Put] = []
         self.yld = [i for i in range(6, 11)] #yield values 6-10
         self.winners: list[tuple[Put, Put, float, int]] = [] #P1, P2, Midpoint, Yield

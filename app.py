@@ -16,7 +16,7 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  
 
 
-SECURITY_KEY = 'Simon'
+SECURITY_KEY = os.getenv("SECURITY_KEY")
 
 progress_data = {}
 results_data = {}  # Store results for each request
@@ -101,9 +101,8 @@ def run(tickers: list[str], request_id, email_address=None):
 
     for i, tick in enumerate(tickers):
         try:
-            price_approx, put_ticks, strikes, bids, asks, exp_dates = getData(tick)
+            put_ticks, strikes, bids, asks, exp_dates = getData(tick)
             stock = Stock(tick)
-            stock.price_app = price_approx
             runStock(stock, put_ticks, strikes, bids, asks, exp_dates)
 
             if stock.winners:
@@ -122,7 +121,6 @@ def run(tickers: list[str], request_id, email_address=None):
     for stock in have_winners:
         stock_results = {
             "tick": stock.tick,
-            "price_app": stock.price_app,
             "winners": []
         }
         for put1, put2, midpoint, yield_val in stock.winners:

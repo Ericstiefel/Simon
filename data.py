@@ -21,18 +21,6 @@ def getData(ticker: str):
             except Exception as e:
                 print(f"Error getting quote for {contract.ticker}: {e}")
             return None
-    def price_approx(ticker: str):
-        #Strike of 0 is the same as the current stock (use approximation)
-        #Workaround extra payment for stock price
-        near_zero_contracts = client.list_options_contracts(
-                                                            underlying_ticker=ticker,
-                                                            contract_type='call',
-                                                            sort='strike_price'
-                                                            )
-        _, quote = fetch_quote(list(near_zero_contracts)[0])
-        mid = abs(quote.bid_price + quote.ask_price / 2)
-
-        return mid
 
 
     client = RESTClient(POLYGON_API_KEY)
@@ -42,7 +30,9 @@ def getData(ticker: str):
     earliest = (datetime.today() + timedelta(days=61)).strftime("%Y-%m-%d")
     future_date = (datetime.today() + timedelta(days=270)).strftime("%Y-%m-%d") 
 
-    curr_price = price_approx(ticker)
+    curr_stock = client.get_last_quote(ticker)
+    
+    curr_price = (curr_stock.bid_price + curr_stock.ask_size) / 2
     
     pct_barrier = 0.2
 
@@ -76,4 +66,4 @@ def getData(ticker: str):
     except Exception as e:
         print(f"An error occurred: {e}")
 
-    return curr_price, put_ticks, strikes, bids, asks, exp_date
+    return put_ticks, strikes, bids, asks, exp_date
