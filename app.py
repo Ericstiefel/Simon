@@ -8,12 +8,15 @@ from flask_cors import CORS
 from stock import Stock, runStock
 from data import getData
 from Email import email
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  
 
 
-SECURITY_KEY = "Simon"
+SECURITY_KEY = os.getenv("SECURITY_KEY")
 
 progress_data = {}
 results_data = {}  # Store results for each request
@@ -61,12 +64,10 @@ def gather_data():
             else:
                 email_address = None
 
-            threading.Thread(target=run, args=(ticker_list, request_id, email_address)).start()
-
-            request_id = str(time.time())
+            request_id = str(time.time()) 
             progress_data[request_id] = 0
 
-            threading.Thread(target=run, args=(ticker_list, request_id)).start()
+            threading.Thread(target=run, args=(ticker_list, request_id, email_address)).start()
 
             return jsonify({
                 'message': 'File received successfully',
