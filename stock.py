@@ -54,17 +54,21 @@ class Stock:
         if midpoint <= 0:
             return
 
-        for y in self.yld:
-            score = max(p1.strike, p2.strike)*y*days_out/365
+        for y in reversed(self.yld):
+            score = (y/36500)*days_out*max(p1.strike, p2.strike)
             if score > midpoint:
                 self.winners.append((p1, p2, midpoint, y))
+                return
 
     def populate_winners(self) -> None:
+        seen = set()
         for p1_idx in range(len(self.puts)):
             for p2_idx in range(p1_idx, len(self.puts)):
-                p1, p2 = self.puts[p1_idx], self.puts[p2_idx]
-                if self.validCompare(p1, p2):
-                    self.evaluate(p1, p2)
+                p1, p2 = min(self.puts[p2_idx].strike, self.puts[p1_idx].strike), max(self.puts[p2_idx].strike, self.puts[p1_idx].strike)
+                if (p1, p2) not in seen:
+                    seen.add((p1,p2))
+                    if self.validCompare(p1, p2):
+                        self.evaluate(p1, p2)
                        
 
 def runStock(stock: Stock, put_tickers: list[str], strikes: list[float], bids: list[float], asks: list[float], exp_dates: list[str]):
