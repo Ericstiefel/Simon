@@ -16,7 +16,7 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  
 
 
-SECURITY_KEY = os.getenv("SECURITY_KEY")
+SECURITY_KEY = 'Simon'
 
 progress_data = {}
 results_data = {}  # Store results for each request

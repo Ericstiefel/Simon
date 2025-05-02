@@ -50,7 +50,6 @@ class Stock:
         days_out = self.days_until(exp)
 
         midpoint = self.midpoint(p1.bid, p1.ask, p2.bid, p2.ask)
-
         if midpoint <= 0:
             return
 
