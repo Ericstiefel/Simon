@@ -27,6 +27,3 @@ def email(address, subject, body):
             print("Email sent successfully via Gmail.")
     except Exception as e:
         print(f"Error sending email via Gmail: {e}")
-
-# Example usage remains the same
-email('ericslide318@gmail.com', 'check', 'This worked via Gmail')
