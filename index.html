@@ -276,7 +276,7 @@
             fetch(`https://api.simonapi.xyz/progress/${requestId}`)
                 .then(response => response.json())
                 .then(data => {
-                    if (data.progress === 100) {
+                    if (data.progress === 101) { // Only allow fetch after email is completed
                         fetch(`https://api.simonapi.xyz/results/${requestId}`)
                             .then(response => response.json())
                             .then(results => {

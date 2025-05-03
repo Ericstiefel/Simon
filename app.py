@@ -151,6 +151,8 @@ def run(tickers: list[str], request_id, email_address=None):
                 for put1, put2, midpoint, yield_val in stock.winners
             )
             email(address=email_address, subject=stock.tick, body=body)
+        
+    progress_data[request_id] = 101 #only allow frontend to fetch after email completes
 
     results_data[request_id] = {"have_winners": final_results, "not_processed": not_processed}
     return have_winners, not_processed
