@@ -102,9 +102,9 @@ def run(tickers: list[str], request_id, email_address=None):
     for i, tick in enumerate(tickers):
         try:
             stock = Stock(tick)
-            put_ticks, strikes, bids, asks, exp_dates = getData(stock)
+            put_ticks, strikes, bids, asks, exp_dates = getData(stock) 
             
-            runStock(stock, put_ticks, strikes, bids, asks, exp_dates)
+            runStock(stock, put_ticks, strikes, bids, asks, exp_dates) 
 
             if stock.winners:
                 have_winners.append(stock)
@@ -116,17 +116,14 @@ def run(tickers: list[str], request_id, email_address=None):
         progress = int((i + 1) / total_tickers * 100)
         progress_data[request_id] = progress
 
-    progress_data[request_id] = 100
+    progress_data[request_id] = 101 
 
     final_results = []
     for stock in have_winners:
-        stock_results = {
-            "tick": stock.tick,
-            "price": stock.price,
-            "winners": stock.winners
-        }
+        processed_winners_list = []
+        
         for put1, put2, midpoint, yield_val in stock.winners:
-            stock_results["winners"].append({
+            processed_winners_list.append({
                 "put1": {
                     "strike": put1.strike,
                     "bid": put1.bid,
@@ -142,23 +139,29 @@ def run(tickers: list[str], request_id, email_address=None):
                 "midpoint": midpoint,
                 "yield": yield_val,
             })
+        
+        stock_results = {
+            "tick": stock.tick,
+            "price": stock.price, 
+            "winners": processed_winners_list 
+        }
         final_results.append(stock_results)
 
-        # If email is enabled, send an email per ticker
-        if email_address:
+        # If email is enabled, send an email per ticker (only for actual winners)
+        if email_address and stock.winners:
             body = "\n".join(
                 f"Put1: Strike {put1.strike}, Bid {put1.bid}, Ask {put1.ask}, Exp {put1.exp_date} | "
                 f"Put2: Strike {put2.strike}, Bid {put2.bid}, Ask {put2.ask}, Exp {put2.exp_date} | "
                 f"Midpoint: {midpoint}, Yield: {yield_val}"
-                for put1, put2, midpoint, yield_val in stock.winners
+                for put1, put2, midpoint, yield_val in stock.winners 
             )
             email(address=email_address, subject=stock.tick, body=body)
         
-    progress_data[request_id] = 101 #only allow frontend to fetch after email completes
-
     results_data[request_id] = {"have_winners": final_results, "not_processed": not_processed}
-    return have_winners, not_processed
+    return have_winners, not_processed 
 
     
 if __name__ == "__main__":
     app.run(debug=False, host="0.0.0.0", port=5001)
+
+

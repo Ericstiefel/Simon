@@ -46,8 +46,6 @@ def getData(stock: Stock):
 
         print(f"🔢 Length of contracts: {len(contracts)}")
 
-        
-
         with ThreadPoolExecutor(max_workers=6) as executor:
             futures = [executor.submit(fetch_quote, c) for c in contracts]
             for future in as_completed(futures):
