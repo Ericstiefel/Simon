@@ -129,12 +129,14 @@ def run(tickers: list[str], request_id, email_address=None):
                     "bid": put1.bid,
                     "ask": put1.ask,
                     "exp_date": put1.exp_date,
+                    "tick": put1.tick,
                 },
                 "put2": {
                     "strike": put2.strike,
                     "bid": put2.bid,
                     "ask": put2.ask,
                     "exp_date": put2.exp_date,
+                    "tick": put2.tick
                 },
                 "midpoint": midpoint,
                 "yield": yield_val,
@@ -150,8 +152,8 @@ def run(tickers: list[str], request_id, email_address=None):
         # If email is enabled, send an email per ticker (only for actual winners)
         if email_address and stock.winners:
             body = "\n".join(
-                f"Put1: Strike {put1.strike}, Bid {put1.bid}, Ask {put1.ask}, Exp {put1.exp_date} | "
-                f"Put2: Strike {put2.strike}, Bid {put2.bid}, Ask {put2.ask}, Exp {put2.exp_date} | "
+                f"Put1: Strike {put1.strike}, Bid {put1.bid}, Ask {put1.ask}, Exp {put1.exp_date}, Tick {put1.tick} | "
+                f"Put2: Strike {put2.strike}, Bid {put2.bid}, Ask {put2.ask}, Exp {put2.exp_date}, Tick  {put2.tick}| "
                 f"Midpoint: {midpoint}, Yield: {yield_val}"
                 for put1, put2, midpoint, yield_val in stock.winners 
             )
@@ -163,5 +165,6 @@ def run(tickers: list[str], request_id, email_address=None):
     
 if __name__ == "__main__":
     app.run(debug=False, host="0.0.0.0", port=5001)
+    #print(run(['NIO', 'PEP'], time.time()))
 
 

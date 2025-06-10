@@ -5,11 +5,12 @@ import os
 from polygon.rest import RESTClient
 
 class Put:
-    def __init__(self, strike: int, bid: float, ask: float, exp_date: int):
+    def __init__(self, strike: int, bid: float, ask: float, exp_date: int, tick):
         self.strike = strike
         self.bid = bid
         self.ask = ask
         self.exp_date = exp_date
+        self.tick = tick
 
 class Stock:
     def __init__(self, tick: str):
@@ -31,15 +32,10 @@ class Stock:
         self.price = stock.ask_price
 
     @staticmethod
-    def days_until(date: str):
-        date_object = datetime.datetime.strptime(date, "%Y-%m-%d").date()
-
-        year = date_object.year
-        month = date_object.month
-        day = date_object.day
-        tgt = datetime.date(year, month, day)
+    def days_until(date_str: str): 
+        date_object = datetime.datetime.strptime(date_str, "%m/%d/%y").date() 
         today = datetime.date.today()
-        return (tgt-today).days
+        return (date_object - today).days
 
     @staticmethod
     def midpoint(P1_bid: float, P1_ask: float, P2_bid: float, P2_ask: float) -> float:
@@ -82,15 +78,19 @@ class Stock:
                         self.evaluate(p1, p2)
                        
 
-def runStock(stock: Stock, put_tickers: list[str], strikes: list[float], bids: list[float], asks: list[float], exp_dates: list[str]):
-    #Populate Puts
+def runStock(stock: Stock, put_tickers: list[str], strikes: list[float], bids: list[float], asks: list[float], exp_dates_yyyy_mm_dd: list[str]):
+    # Populate Puts
     puts = []
     for idx in range(len(put_tickers)):
-        put = Put(strikes[idx], bids[idx], asks[idx], exp_dates[idx])
+        # Convert YYYY-MM-DD string to datetime object
+        date_obj = datetime.datetime.strptime(exp_dates_yyyy_mm_dd[idx], "%Y-%m-%d").date()
+        # Format datetime object to MM/DD/YY string
+        formatted_exp_date = date_obj.strftime("%m/%d/%y")
+        
+        put = Put(strikes[idx], bids[idx], asks[idx], formatted_exp_date, put_tickers[idx])
         puts.append(put)
     stock.puts = puts
 
-    #Populate Winners
     stock.populate_winners()
 
 
