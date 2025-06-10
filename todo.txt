@@ -1,0 +1,12 @@
+Price of the stock adjacent to the ticker (MSFT - 200)
+Three decimal points showing up on midpoint 
+Yield showing three decimal points 
+Date says 25 not 2025
+Month day year not year month day 
+Add option ticker on website 
+Max loss of up to 10%
+Lower than 20%
+Ask to create sliders for us to change on our own. Make it more dynamic.
+Add number of results on each ticker
+
+Add metric: Maxloss capped at 10%.  = ceil(midpoint - abs(K1-K2))/max{K1, K2}

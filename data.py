@@ -5,13 +5,14 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from time import sleep
 from random import uniform
 from datetime import datetime, timedelta
+from stock import Stock
 
 
 # Import API key from environment variables
 load_dotenv()
 POLYGON_API_KEY = os.getenv("POLYGON_API_KEY")
 
-def getData(ticker: str):
+def getData(stock: Stock):
     def fetch_quote(contract):
             try:
                 sleep(uniform(0.05, 0.2))  # Stagger to avoid burst
@@ -29,18 +30,14 @@ def getData(ticker: str):
 
     earliest = (datetime.today() + timedelta(days=61)).strftime("%Y-%m-%d")
     future_date = (datetime.today() + timedelta(days=270)).strftime("%Y-%m-%d") 
-
-    curr_stock = client.get_last_quote(ticker)
-    
-    curr_price = curr_stock.ask_price
     
     pct_barrier = 0.2
 
-    max_b = (1+pct_barrier)*curr_price
+    max_b = (1+pct_barrier)*stock.price
 
     try:
         contracts = list(client.list_options_contracts(
-            underlying_ticker=ticker,
+            underlying_ticker=stock.tick,
             contract_type="put",
             expiration_date_gte=earliest,
             expiration_date_lte=future_date,

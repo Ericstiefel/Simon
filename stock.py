@@ -1,5 +1,8 @@
 from datetime import date
 import datetime
+from dotenv import load_dotenv
+import os
+from polygon.rest import RESTClient
 
 class Put:
     def __init__(self, strike: int, bid: float, ask: float, exp_date: int):
@@ -17,10 +20,15 @@ class Stock:
             bid = 0
             same strike        
         """
+        load_dotenv()
+        POLYGON_API_KEY = os.getenv("POLYGON_API_KEY")
         self.tick = tick
         self.puts: list[Put] = []
         self.yld = [i for i in range(6, 11)] #yield values 6-10
         self.winners: list[tuple[Put, Put, float, int]] = [] #P1, P2, Midpoint, Yield
+        client = RESTClient(POLYGON_API_KEY)
+        stock = client.get_last_quote(self.tick)
+        self.price = stock.ask_price
 
     @staticmethod
     def days_until(date: str):
@@ -37,7 +45,7 @@ class Stock:
     def midpoint(P1_bid: float, P1_ask: float, P2_bid: float, P2_ask: float) -> float:
         aggresive = -P1_bid + P2_ask
         conservative = -P1_ask + P2_bid
-        return (aggresive + conservative) / 2
+        return round((aggresive + conservative) / 2, 3)
     
     @staticmethod
     def validCompare(p1: Put, p2: Put, max_strike_split: float = .25) -> bool:

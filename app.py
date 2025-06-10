@@ -101,8 +101,9 @@ def run(tickers: list[str], request_id, email_address=None):
 
     for i, tick in enumerate(tickers):
         try:
-            put_ticks, strikes, bids, asks, exp_dates = getData(tick)
             stock = Stock(tick)
+            put_ticks, strikes, bids, asks, exp_dates = getData(stock)
+            
             runStock(stock, put_ticks, strikes, bids, asks, exp_dates)
 
             if stock.winners:
@@ -121,7 +122,8 @@ def run(tickers: list[str], request_id, email_address=None):
     for stock in have_winners:
         stock_results = {
             "tick": stock.tick,
-            "winners": []
+            "price": stock.price,
+            "winners": stock.winners
         }
         for put1, put2, midpoint, yield_val in stock.winners:
             stock_results["winners"].append({
