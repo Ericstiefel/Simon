@@ -304,6 +304,8 @@
         const resultsDiv = document.getElementById("Results");
         let html = "<h1>Algo Results</h1>";
 
+        console.log(haveWinners)
+
         if (haveWinners && haveWinners.length > 0) {
             haveWinners.forEach(stock => {
                 html += `<h2>${stock.tick}</h2>`;
