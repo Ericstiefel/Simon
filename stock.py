@@ -3,6 +3,7 @@ import datetime
 from dotenv import load_dotenv
 import os
 from polygon.rest import RESTClient
+import math
 
 class Put:
     def __init__(self, strike: int, bid: float, ask: float, exp_date: int, tick):
@@ -47,14 +48,22 @@ class Stock:
     def validCompare(p1: Put, p2: Put, max_strike_split: float = .25) -> bool:
         strike_diff: bool = abs((p1.strike - p2.strike) / p2.strike) < max_strike_split
         return (p1 != p2) and (p1.exp_date == p2.exp_date) and (p1.strike != p2.strike) and strike_diff
-
     
+    @staticmethod
+    def maxLoss(p1: Put, p2: Put, midpoint: float, cap_loss: float = 0.1) -> bool:
+        k1, k2 = p1.strike, p2.strike
+        return math.ceil(midpoint - abs(k1-k2)) / max(k1, k2) < cap_loss
+        
+
     def evaluate(self, p1: Put, p2: Put):
         exp = p1.exp_date
         days_out = self.days_until(exp)
 
         midpoint = self.midpoint(p1.bid, p1.ask, p2.bid, p2.ask)
         if midpoint <= 0:
+            return
+        
+        if not self.maxLoss(p1, p2, midpoint):
             return
 
         for y in reversed(self.yld):

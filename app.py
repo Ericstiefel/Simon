@@ -145,7 +145,7 @@ def run(tickers: list[str], request_id, email_address=None):
         stock_results = {
             "tick": stock.tick,
             "price": stock.price, 
-            "winners": processed_winners_list 
+            "winners": processed_winners_list
         }
         final_results.append(stock_results)
 

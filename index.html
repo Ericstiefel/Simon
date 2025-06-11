@@ -308,7 +308,7 @@
 
         if (haveWinners && haveWinners.length > 0) {
             haveWinners.forEach(stock => {
-                html += `<h2>${stock.tick}</h2>`;
+                html += `<h2>${stock.tick}: ${stock.winners.length} trades</h2>`;
                 stock.winners.forEach(winner => {
                     html += `
                         <p><strong>Ticker:</strong> ${stock.tick} - ${stock.price}</p>
