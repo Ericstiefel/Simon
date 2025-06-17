@@ -122,7 +122,7 @@ def run(tickers: list[str], request_id, email_address=None):
     for stock in have_winners:
         processed_winners_list = []
         
-        for put1, put2, midpoint, yield_val in stock.winners:
+        for put1, put2, midpoint, yield_val, max_loss in stock.winners:
             processed_winners_list.append({
                 "put1": {
                     "strike": put1.strike,
@@ -140,6 +140,7 @@ def run(tickers: list[str], request_id, email_address=None):
                 },
                 "midpoint": midpoint,
                 "yield": yield_val,
+                "Max_Loss": max_loss,
             })
         
         stock_results = {
@@ -151,13 +152,15 @@ def run(tickers: list[str], request_id, email_address=None):
 
         # If email is enabled, send an email per ticker (only for actual winners)
         if email_address and stock.winners:
-            body = "\n".join(
-                f"Put1: Strike {put1.strike}, Bid {put1.bid}, Ask {put1.ask}, Exp {put1.exp_date}, Tick {put1.tick} | "
-                f"Put2: Strike {put2.strike}, Bid {put2.bid}, Ask {put2.ask}, Exp {put2.exp_date}, Tick  {put2.tick}| "
-                f"Midpoint: {midpoint}, Yield: {yield_val}"
-                for put1, put2, midpoint, yield_val in stock.winners 
+            full_body = "\n\n".join(
+                f"Put1: Strike {put1.strike}, Bid {put1.bid}, Ask {put1.ask}, Exp {put1.exp_date}, Tick {put1.tick}\n"
+                f"Put2: Strike {put2.strike}, Bid {put2.bid}, Ask {put2.ask}, Exp {put2.exp_date}, Tick {put2.tick}\n"
+                f"Max Loss: {max_loss}, Midpoint: {midpoint}, Yield: {yield_val}"
+                for put1, put2, midpoint, yield_val, max_loss in stock.winners
             )
-            email(address=email_address, subject=stock.tick, body=body)
+            full_body = f"Stock: {stock.tick}\n\n{full_body}"
+            email(address=email_address, subject=stock.tick, body=full_body)
+
         
     results_data[request_id] = {"have_winners": final_results, "not_processed": not_processed}
     return have_winners, not_processed 
@@ -165,6 +168,6 @@ def run(tickers: list[str], request_id, email_address=None):
     
 if __name__ == "__main__":
     app.run(debug=False, host="0.0.0.0", port=5001)
-    #print(run(['NIO', 'PEP'], time.time()))
+    print(run(['NIO', 'PEP'], time.time(), email_address='ericslide318@gmail.com'))
 
 

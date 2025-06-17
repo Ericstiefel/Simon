@@ -27,7 +27,7 @@ class Stock:
         self.tick = tick
         self.puts: list[Put] = []
         self.yld = [i for i in range(6, 11)] #yield values 6-10
-        self.winners: list[tuple[Put, Put, float, int]] = [] #P1, P2, Midpoint, Yield
+        self.winners: list[tuple[Put, Put, float, int, float]] = [] #P1, P2, Midpoint, Yield, Max Loss
         client = RESTClient(POLYGON_API_KEY)
         stock = client.get_last_quote(self.tick)
         self.price = stock.ask_price
@@ -50,12 +50,11 @@ class Stock:
         return (p1 != p2) and (p1.exp_date == p2.exp_date) and (p1.strike != p2.strike) and strike_diff
     
     @staticmethod
-    def maxLoss(p1: Put, p2: Put, midpoint: float, cap_loss: float = 0.1) -> bool:
+    def maxLoss(p1: Put, p2: Put, midpoint: float) -> float:
         k1, k2 = p1.strike, p2.strike
-        return math.ceil(midpoint - abs(k1-k2)) / max(k1, k2) < cap_loss
-        
+        return round((abs(k1 - k2) - midpoint) / max(k1, k2), 4)
 
-    def evaluate(self, p1: Put, p2: Put):
+    def evaluate(self, p1: Put, p2: Put, cap_loss: float = 0.1):
         exp = p1.exp_date
         days_out = self.days_until(exp)
 
@@ -63,13 +62,15 @@ class Stock:
         if midpoint <= 0:
             return
         
-        if not self.maxLoss(p1, p2, midpoint):
+        max_loss = self.maxLoss(p1, p2, midpoint)
+
+        if max_loss > cap_loss:
             return
 
         for y in reversed(self.yld):
             score = (y/36500)*days_out*max(p1.strike, p2.strike)
             if score < midpoint:
-                self.winners.append((p1, p2, midpoint, y))
+                self.winners.append((p1, p2, midpoint, y, max_loss))
                 return
 
     def populate_winners(self) -> None:
