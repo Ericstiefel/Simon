@@ -168,6 +168,6 @@ def run(tickers: list[str], request_id, email_address=None):
     
 if __name__ == "__main__":
     app.run(debug=False, host="0.0.0.0", port=5001)
-    print(run(['NIO', 'PEP'], time.time(), email_address='ericslide318@gmail.com'))
+    print(run(['NIO', 'PEP'], time.time()))
 
 
